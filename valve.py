@@ -11,13 +11,13 @@ class Valve:
         self.pin = pin
         GPIO.setup(self.pin, GPIO.OUT) 
 
-    def open (self):
+    def open(self):
         GPIO.output(self.pin, GPIO.HIGH)
 
-    def close (self):
+    def close(self):
         GPIO.output(self.pin, GPIO.LOW)        
 
-    def set (self, tf):
+    def set(self, tf):
         GPIO.output(self.pin, tf)        
 
 

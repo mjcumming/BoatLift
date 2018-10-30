@@ -30,7 +30,7 @@ class Roll_Pitch:
 
     def check_within_parameters(self):
         if self.roll > 10 or self.roll < 10 or self.pitch > 10 or self.pitch < 10:
-            self.last_check_not_safe =+ 1
+            self.last_check_not_safe += 1
 
             if self.last_check_not_safe > self.MAX_UNSAFE_CONSEQ_READS: # already one ba
                 return False
@@ -46,5 +46,5 @@ if __name__ == "__main__":
  
     while True:
         roll,pitch = rp.read()
-        print("Roll: {}  Pitch {} ".format (roll,pitch))
+        print("Roll: {}  Pitch {}   Within parameters {}".format (roll,pitch, rp.check_within_parameters()))
         time.sleep (1)

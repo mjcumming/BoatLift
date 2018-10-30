@@ -6,10 +6,10 @@ import time
 from LED import LED 
 
 LED_list = {
-    "lift" : 12,  #BCM
-    "lower" : 16,
-    "bypass" : 20,
-    "stop" : 21,
+    "lift" : 7,  #BOARD
+    "lower" : 11,
+    "bypass" : 13,
+    "stop" : 15,
 }
 
 class LEDs:
@@ -72,20 +72,20 @@ class LEDs:
 
 
 if __name__ == "__main__":
-    GPIO.setmode(GPIO.BCM)
+    GPIO.setmode(GPIO.BOARD)
     leds = LEDs ()
  
     while True:
-        leds.all_on()
-        time.sleep (1)
+        #leds.all_on()
+        #time.sleep (1)
 
-        leds.all_off()
-        time.sleep (1)
+        #leds.all_off()
+        #time.sleep (1)
 
-        leds.all_flash()
-        time.sleep (1)        
+        #leds.all_flash()
+        #time.sleep (10)        
 
         leds.set_lift()
-        time.sleep (1)        
+        time.sleep (10)        
 
 

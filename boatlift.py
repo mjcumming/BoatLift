@@ -1,5 +1,6 @@
 """
 
+
 Boat lift
 
 
@@ -12,9 +13,9 @@ import time
 from roll_pitch import Roll_Pitch
 from valves import Valves
 from LEDs import LEDs
+from push_buttons import Push_Buttons
 
-
-GPIO.setmode(GPIO.BCM)
+GPIO.setmode(GPIO.BOARD)
 
 
 
@@ -33,27 +34,21 @@ UNKNOWN = 6
 current_mode = IDLE
 request_mode = None
 
+# position
+position = UNKNOWN
+
 # push buttons
 #  pins
 LIFT_PIN = 18 # BCM
 LOWER_PIN = 23
 BYPASS_PIN = 24
 STOP_PIN = 25
-#  callbacks
 
-def lift_callback():
-    request_mode = LIFTING
+# push buttons
+def push_button_callback(button_mode)
+    request_mode = button_mode
 
-def lower_callback():
-    request_mode = LOWERING
-
-def bypass_callback():
-    request_mode = BYPASS
-
-def stop_callback():
-    request_mode = IDLE
-
-lift_button = Push_Button (LIFTPIN, lift_callback)
+lift_buttons = Push_Buttons(push_button_callback)
 
 while True:
 

@@ -6,10 +6,10 @@ import time
 from valve import Valve
 
 valve_list = {
-    "bow_startboard" : 5,  #BCM
-    "bow_port" : 6,
-    "stern_startboard" : 13,
-    "stern_port" : 19,
+    "bow_startboard" : 29,  #BOARD
+    "bow_port" : 31,
+    "stern_startboard" : 33,
+    "stern_port" : 35,
 }
 
 class Valves:
@@ -57,7 +57,7 @@ class Valves:
             ss = True
             sp = True
 
-        set_all (bp,bs,sp,ss)
+        self.set_all (bp,bs,sp,ss)
 
     def lowering(self,roll,pitch,roll_goal, pitch_goal, roll_range, pitch_range):
  
@@ -83,10 +83,10 @@ class Valves:
             ss = False
             sp = False
 
-        set_all (bp,bs,sp,ss)
+        self.set_all (bp,bs,sp,ss)
 
 if __name__ == "__main__":
-    GPIO.setmode(GPIO.BCM)
+    GPIO.setmode(GPIO.BOARD)
     valves = Valves ()
  
     while True:
