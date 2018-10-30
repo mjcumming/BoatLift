@@ -61,8 +61,6 @@ class Valves:
 
     def lowering(self,roll,pitch,roll_goal, pitch_goal, roll_range, pitch_range):
  
-        set_all (bp,bs,sp,ss)
-
         # assume all tanks should be on
         bp = True
         bs = True
@@ -84,6 +82,8 @@ class Valves:
         elif pitch < (pitch_goal - pitch_range): # leaning to stern
             ss = False
             sp = False
+
+        set_all (bp,bs,sp,ss)
 
 if __name__ == "__main__":
     GPIO.setmode(GPIO.BCM)

@@ -7,9 +7,7 @@ class Valve:
     
     pin = None
 
-    name = None
-
-    def __init__(self, name, pin): # using GPIO.BOARD
+    def __init__(self, pin): # using GPIO.BOARD
         self.pin = pin
         GPIO.setup(self.pin, GPIO.OUT) 
 
@@ -18,6 +16,9 @@ class Valve:
 
     def close (self):
         GPIO.output(self.pin, GPIO.LOW)        
+
+    def set (self, tf):
+        GPIO.output(self.pin, tf)        
 
 
 
