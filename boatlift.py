@@ -8,6 +8,7 @@ Boat lift
 
 
 import RPi.GPIO as GPIO
+import datetime
 import time
 
 from roll_pitch import Roll_Pitch
@@ -38,6 +39,9 @@ UNKNOWN = 6
 # modes
 current_mode = IDLE
 request_mode = None
+
+mode_start_time = None
+mode_expire_minutes = None
 
 # position
 position = UNKNOWN
@@ -74,8 +78,25 @@ PITCH_SAFETY = 10 # max pitch before error
 def start_lifting ():
     lift_LEDs.set_lift()
     lift_motor.on()
-  
-  
+    global mode_start_time 
+    mode_start_time = datetime.datetime.now()
+    global mode_expire_minutes
+    mode_expire_minutes = 4
+
+def start_lowering ():
+    lift_LEDs.set_lower()
+    lift_motor.off()  
+
+def start_bypassing ():
+    lift_LEDs.set_bypass()
+    lift_motor.off()  
+    lift_valves.set_all (True,True,True,True)
+
+def start_idle ():
+    lift_LEDs.set_unknown()
+    lift_motor.off()  
+    lift_valves.set_all (False,False,False,False)
+
 print ("Starting")
 lift_LEDs.set_unknown()
 
@@ -86,6 +107,15 @@ while True:
         if request_mode is "LIFT":
             start_lifting() 
             current_mode = LIFTING
+        elif request_mode is "LOWER":
+            start_lowering() 
+            current_mode = LOWERING
+        elif request_mode is "BYPASS":
+            start_bypassing() 
+            current_mode = BYPASSING
+        elif request_mode is "STOP":
+            start_idle() 
+            current_mode = IDLE
 
         request_mode = None
 
@@ -93,8 +123,30 @@ while True:
         roll,pitch = lift_roll_pitch.read()
         lift_valves.lifting(roll,pitch,ROLL_GOAL,PITCH_GOAL,ROLL_RANGE,PITCH_RANGE)
         safe = lift_roll_pitch.check_within_parameters(ROLL_SAFETY,PITCH_SAFETY)
+
+        # get height
+
         print("Roll: {}  Pitch {}   Within parameters {}".format (roll,pitch, safe))
    
+    elif current_mode == LOWERING:
+        roll,pitch = lift_roll_pitch.read()
+        lift_valves.lowering(roll,pitch,ROLL_GOAL,PITCH_GOAL,ROLL_RANGE,PITCH_RANGE)
+        safe = lift_roll_pitch.check_within_parameters(ROLL_SAFETY,PITCH_SAFETY)
+
+        # get height
+        
+        print("Roll: {}  Pitch {}   Within parameters {}".format (roll,pitch, safe))
+   
+    # check how long we have been running
+    if mode_start_time != None:
+        if (datetime.datetime.now() - mode_start_time).seconds > mode_expire_minutes: 
+            print ("watch dog time expired")
+            lift_LEDs.set_unknown()
+            lift_valves.close_all()
+            lift_motor.off()
+            mode_start_time = None
+            mode_expire_minutes = None
+            current_mode = IDLE
 
     time.sleep (1)
             

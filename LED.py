@@ -17,12 +17,12 @@ class LED:
         self.PWM = GPIO.PWM(self.pin, 1)
 
     def on (self):
-        self.PWM.stop ()
-        GPIO.output(self.pin, GPIO.HIGH)
+        self.PWM.start (100)
+        #GPIO.output(self.pin, GPIO.HIGH)
 
     def off (self):
-        self.PWM.stop ()
-        GPIO.output(self.pin, GPIO.LOW)        
+        self.PWM.start (0)
+        #GPIO.output(self.pin, GPIO.LOW)        
 
     def flash (self):
         self.PWM.start (50)
@@ -31,14 +31,14 @@ class LED:
 
 if __name__ == "__main__":
     GPIO.setmode(GPIO.BOARD)
-    led = LED (40)
+    led = LED (7)
  
     while True:
-        #led.on()
-        #time.sleep (1)
+        led.on()
+        time.sleep (5)
 
-        #led.off()
-        #time.sleep (1)
+        led.off()
+        time.sleep (5)
 
         led.flash()
-        #time.sleep(5)
+        time.sleep(5)
