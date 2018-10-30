@@ -51,6 +51,7 @@ STOP_PIN = 25
 
 # push buttons
 def push_button_callback(button_mode):
+    global request_mode
     request_mode = button_mode
     print ("Mode request {}".format(request_mode))
 
@@ -62,26 +63,40 @@ lift_valves = Valves()
 
 lift_motor = Blower_Motor()
 
+lift_roll_pitch = Roll_Pitch()
+ROLL_GOAL = 0
+PITCH_GOAL = 2
+ROLL_RANGE = 5
+PITCH_RANGE = 5
+ROLL_SAFETY = 10 # max roll safety
+PITCH_SAFETY = 10 # max pitch before error
+
 def start_lifting ():
     lift_LEDs.set_lift()
-    lift_Valves.lifting()
     lift_motor.on()
   
-
+  
+print ("Starting")
+lift_LEDs.set_unknown()
 
 while True:
 
     if request_mode != None: # user requested a change
-        print ("Mode requested {} are equal {}".format(request_mode,(request_mode is "LIFT")))
+        print ("Mode requested {}".format(request_mode))
         if request_mode is "LIFT":
-            print ("here")
             start_lifting() 
             current_mode = LIFTING
 
         request_mode = None
 
     if current_mode == LIFTING:
-        lift_Valves.lifting()
+        roll,pitch = lift_roll_pitch.read()
+        lift_valves.lifting(roll,pitch,ROLL_GOAL,PITCH_GOAL,ROLL_RANGE,PITCH_RANGE)
+        safe = lift_roll_pitch.check_within_parameters(ROLL_SAFETY,PITCH_SAFETY)
+        print("Roll: {}  Pitch {}   Within parameters {}".format (roll,pitch, safe))
+   
+
+    time.sleep (1)
             
  
 

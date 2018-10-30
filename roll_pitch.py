@@ -1,4 +1,12 @@
 """
+
+roll + = tilting port 
+
+pitch + = tilting to stern
+
+
+
+
 """
 
 
@@ -8,11 +16,6 @@ import time
 
 
 class Roll_Pitch:
-
-    ROLL_SAFETY = 10 # max roll safety
-
-    PITCH_SAFETY = 10 # max pitch before error
-
     MAX_UNSAFE_CONSEQ_READS = 3 # number of safety reads before error
     
     last_check_not_safe = 0 # number of consecutive unsafe measurements before error
@@ -25,11 +28,17 @@ class Roll_Pitch:
 
     
     def read(self): # return so that roll/pitch are 0 when level, + numbers = leaning to starboard or bow
-        self.roll,self.pitch = self.inclinometer.get_angles()
+        x,y = self.inclinometer.get_angles()
+        if x > 0:
+            x = 180 - x
+        else:
+            x = abs(x) - 180
+    
+        self.roll,self.pitch = y,x
         return self.roll,self.pitch
 
-    def check_within_parameters(self):
-        if self.roll > 10 or self.roll < 10 or self.pitch > 10 or self.pitch < 10:
+    def check_within_parameters(self,roll_safety, pitch_safety):
+        if self.roll > roll_safety or self.roll < -roll_safety or self.pitch > pitch_safety or self.pitch < -pitch_safety:
             self.last_check_not_safe += 1
 
             if self.last_check_not_safe > self.MAX_UNSAFE_CONSEQ_READS: # already one ba
