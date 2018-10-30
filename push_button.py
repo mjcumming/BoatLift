@@ -5,13 +5,12 @@ import RPi.GPIO as GPIO
 class Push_Button:
     
     pin = None # BOARD
+    name = None
 
-    def __init__(self, pin, button_callback): # using GPIO.BOARD
+    def __init__(self, name, pin): # using GPIO.BOARD
         self.pin = pin
+        self.name = name
 
         GPIO.setup(self.pin, GPIO.IN, GPIO.PUD_UP) # Set pin to be an input pin and set initial value to be pulled low (off)
-        
-        GPIO.add_event_detect(self.pin,GPIO.RISING,callback=button_callback, bouncetime=500) # Setup event on pin rising edge
-
-
+ 
     
