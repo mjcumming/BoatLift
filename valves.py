@@ -36,6 +36,7 @@ class Valves:
             valve.close()
 
     def set_all (self, bs, bp, ss, sp):
+        print ("Valves: Bow Starboard: {}  Bow Port: {}  Stern Starboard: {}  Stern Port: {}".format (bs,bp,ss,sp))
         self.list ["bow_starboard"].set(bs)
         self.list ["bow_port"].set(bp)
         self.list ["stern_starboard"].set(ss)
