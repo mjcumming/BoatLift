@@ -18,6 +18,9 @@ class UltraSonic:
         speed_of_sound = 331.3 
         
         sample = []
+
+        sonar_signal_off = 0
+        sonar_signal_on = 0
         
         for distance_reading in range(sample_size):
             GPIO.output(self.GPIO_TRIGGER, GPIO.LOW)
@@ -36,6 +39,9 @@ class UltraSonic:
 
             while GPIO.input(self.GPIO_ECHO) == 1:
                 sonar_signal_on = time.time()
+
+            if sonar_signal_off == 0 or sonar_signal_on == 0:
+                return None
 
             time_passed = sonar_signal_on - sonar_signal_off
             distance_cm = time_passed * ((speed_of_sound * 100) / 2)

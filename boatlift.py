@@ -24,6 +24,7 @@ from LEDs import LEDs
 from push_buttons import Push_Buttons
 from blower_motor import Blower_Motor
 from ultrasonic_sensor import UltraSonic
+from lift_mqtt import Lift_MQTT
 
 
 """
@@ -105,6 +106,8 @@ lift_roll_pitch = Roll_Pitch()
 
 lift_height = UltraSonic()
 
+lift_mqtt = Lift_MQTT ()
+lift_mqtt.connect(push_button_callback)
 
 def start_lifting ():
     global current_mode 
@@ -174,13 +177,13 @@ try:
         if request_mode != None: # user requested a change
             print ("Mode requested {}".format(request_mode))
             
-            if request_mode is "LIFT":
+            if request_mode == "LIFT":
                 start_lifting() 
-            elif request_mode is "LOWER":
+            elif request_mode == "LOWER":
                 start_lowering() 
-            elif request_mode is "BYPASS":
+            elif request_mode == "BYPASS":
                 start_bypassing() 
-            elif request_mode is "STOP":
+            elif request_mode == "STOP":
                 start_idle() 
 
             request_mode = None
@@ -197,6 +200,8 @@ try:
                 start_idle() 
 
             print("Roll: {}  Pitch {}   Within parameters {}   Height {}".format (roll,pitch, safe, height))
+            payload = "Roll: {}  Pitch {}   Within parameters {}   Height {}".format (roll,pitch, safe, height)
+            lift_mqtt.publish("boatlift",payload)
     
         elif current_mode == LOWERING:
             roll,pitch = lift_roll_pitch.read()
@@ -210,6 +215,8 @@ try:
                 start_idle() 
 
             print("Roll: {}  Pitch {}   Within parameters {}   Height {}".format (roll,pitch, safe, height))
+            payload = "Roll: {}  Pitch {}   Within parameters {}   Height {}".format (roll,pitch, safe, height)
+            lift_mqtt.publish("boatlift",payload)
 
         elif current_mode == BYPASSING:
             roll,pitch = lift_roll_pitch.read()
@@ -219,6 +226,8 @@ try:
             height = lift_height.distance()
             
             print("Roll: {}  Pitch {}   Within parameters {}   Height {}".format (roll,pitch, safe, height))
+            payload = "Roll: {}  Pitch {}   Within parameters {}   Height {}".format (roll,pitch, safe, height)
+            lift_mqtt.publish("boatlift",payload)
     
         # check how long we have been running
         if mode_start_time != None:
@@ -227,7 +236,12 @@ try:
                 position = UNKNOWN
                 start_idle()
 
-        time.sleep (1)
+        time.sleep (.2)
+
+        #remove
+        #height = lift_height.distance()
+        #roll,pitch = lift_roll_pitch.read()
+        #print("Roll: {}  Pitch {}    Height {}".format (roll,pitch, height))
 
 except KeyboardInterrupt:
     print("Stopped by User")
