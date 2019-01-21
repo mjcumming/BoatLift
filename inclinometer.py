@@ -1,6 +1,7 @@
 """This program uses an MPU6050 to determine x/y inclination with smoothing using Kalman
 
 from https://github.com/rocheparadox/Kalman-Filter-Python-for-mpu6050
+
 """
 
 
@@ -18,7 +19,7 @@ radToDeg = 57.2957786
 
 class Inclinometer:
 
-    RestrictPitch = True
+    RestrictPitch = True 
 
     kalmanX = KalmanAngle()
     kalmanY = KalmanAngle()

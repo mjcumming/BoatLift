@@ -99,7 +99,7 @@ if __name__ == "__main__":
  
     while True:
         valves.open_all()
-        time.sleep (1)
+        time.sleep (5)
 
         valves.close_all()
-        time.sleep (1)
+        time.sleep (5)
