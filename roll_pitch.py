@@ -55,5 +55,5 @@ if __name__ == "__main__":
  
     while True:
         roll,pitch = rp.read()
-        print("Roll: {}  Pitch {}   Within parameters {}".format (roll,pitch, rp.check_within_parameters()))
+        print("Roll: {}  Pitch {}   Within parameters {}".format (roll,pitch, rp.check_within_parameters(10,10)))
         time.sleep (1)
