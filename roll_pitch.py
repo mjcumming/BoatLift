@@ -20,7 +20,7 @@ class Roll_Pitch:
     
     last_check_not_safe = 0 # number of consecutive unsafe measurements before error
     roll = None
-    pitche = None
+    pitch = None
 
 
     def __init__(self):
@@ -28,9 +28,9 @@ class Roll_Pitch:
 
     
     def read(self): # return so that roll/pitch are 0 when level, + numbers = leaning to starboard or bow
-        x,y = self.inclinometer.get_angles()
+        x,y = self.inclinometer.get_angles() # as setup, the inclinometer does not ever return a pitch of 180 - not why. so we never get a pitch of 0 if we use 180 instead of 179
         if x > 0:
-            x = 180 - x
+            x = 179 - x
         else:
             x = abs(x) - 180
     
