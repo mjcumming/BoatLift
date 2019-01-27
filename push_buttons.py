@@ -6,10 +6,10 @@ import time
 from push_button import Push_Button
 
 button_list = {
-    "LIFT" : 38,  #BOARD
+    "LIFT" : 32,  #BOARD
     "LOWER" : 36,
-    "BYPASS" : 22,
-    "STOP" : 32,
+    "BYPASS" : 38,
+    "STOP" : 40,
 }
 
 class Push_Buttons:

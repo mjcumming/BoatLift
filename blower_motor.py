@@ -2,7 +2,7 @@
 import RPi.GPIO as GPIO
 import time
 
-BLOWER_PIN = 18
+BLOWER_PIN = 37
 
 class Blower_Motor:
     

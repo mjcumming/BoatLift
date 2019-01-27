@@ -11,7 +11,7 @@ LIFTEDMAX
 
 float switch version
 
-Pins 16,37,40
+Pins 16,18,22
 
 """
 import RPi.GPIO as GPIO
@@ -24,8 +24,8 @@ from float_switch import Float_Switch
 
 float_switch_list = {
     "BOTTOM" : 16,  #BOARD
-    "MIDDLE" : 37,
-    "TOP" : 40,
+    "MIDDLE" : 18,
+    "TOP" : 22,
 }
 
 class Lift_Position:
@@ -38,7 +38,7 @@ class Lift_Position:
         self.callback = position_callback
 
         def debounce(channel):
-            print ('float switch callback',channel, GPIO.input(channel))
+            #print ('float switch callback',channel, GPIO.input(channel))
             if self.timer:
                 self.timer.cancel()
             
@@ -62,7 +62,7 @@ class Lift_Position:
     def get(self): #returns the position of the lift
         switches = self.read_float_switches()
 
-        print('Float switches: {}'.format(switches))
+        #print('Float switches: {}'.format(switches))
 
         if switches ["BOTTOM"] == "OutOfWater":
             return "LIFTEDMAX"
