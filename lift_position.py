@@ -1,0 +1,99 @@
+"""
+
+determines position of the lift (height)
+
+lift has 3 defined positions
+
+LOWERED
+LIFTED
+LIFTEDMAX
+
+
+float switch version
+
+Pins 16,37,40
+
+"""
+import RPi.GPIO as GPIO
+
+import time
+
+from threading import Timer
+
+from float_switch import Float_Switch
+
+float_switch_list = {
+    "BOTTOM" : 16,  #BOARD
+    "MIDDLE" : 37,
+    "TOP" : 40,
+}
+
+class Lift_Position:
+
+    float_switches = {}
+    callback = None
+    timer = None
+
+    def __init__(self,position_callback): # using GPIO.BOARD
+        self.callback = position_callback
+
+        def debounce(channel):
+            print ('float switch callback',channel, GPIO.input(channel))
+            if self.timer:
+                self.timer.cancel()
+            
+            def callback():
+                self.callback(self.get())
+
+            self.timer = Timer(2,callback)
+            self.timer.start()
+
+        for name,pin in float_switch_list.items():
+            self.float_switches [name] = Float_Switch(name,pin)
+            GPIO.add_event_detect(pin,GPIO.BOTH,callback=debounce, bouncetime=100) # Setup event on pin rising edge
+
+    def read_float_switches(self):
+        switches = {}
+        for name,float_switch in self.float_switches.items():
+            switches [name] = float_switch.read()
+
+        return switches
+
+    def get(self): #returns the position of the lift
+        switches = self.read_float_switches()
+
+        print('Float switches: {}'.format(switches))
+
+        if switches ["BOTTOM"] == "OutOfWater":
+            return "LIFTEDMAX"
+        elif switches ["TOP"] == "InWater":
+            return "LOWERED"
+        elif switches ["MIDDLE"] == "OutOfWater":
+            return "LIFTED"
+        else:
+            return "UNKNOWN"
+
+    def is_lifted(self):
+        return self.get()=='LIFTED'
+
+    def is_lifted_max(self):
+        return self.get()=='LIFTEDMAX'
+
+    def is_lowered(self):
+        return self.get()=='LOWERED'
+
+   
+
+if __name__ == "__main__":
+    
+    GPIO.setmode(GPIO.BOARD)
+    def callback (name):
+        print ("Lift Position: "+name)
+
+    pbs = Lift_Position(callback)
+
+    print(pbs.get())
+
+    while True:
+        pass
+

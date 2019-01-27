@@ -8,10 +8,11 @@ GPIO Pins (BOARD)
 LEDs 7,11,13,15
 Buttons 22,32,36,38
 Valves 29,31,33,35
-Ultrasound 37,40
+Float Switches 16,37,40
 Motor 18
 
 """
+
 
 
 import RPi.GPIO as GPIO
@@ -23,8 +24,9 @@ from valves import Valves
 from LEDs import LEDs
 from push_buttons import Push_Buttons
 from blower_motor import Blower_Motor
-from ultrasonic_sensor import UltraSonic
-from lift_mqtt import Lift_MQTT
+#from ultrasonic_sensor import UltraSonic
+from lift_position import Lift_Position
+#from lift_mqtt import Lift_MQTT
 
 
 """
@@ -35,27 +37,32 @@ Constants
 
 #request modes
 LIFT = 1
+LIFT_MAX = 5
 LOWER = 2
-BYPASS = 3
+BYPASS_BLOWER_OFF = 3
+BYPASS_BLOWER_ON = 6
 STOP = 4
 
 # operating modes of lift
 IDLE = 0 # all valves closed, blower motor off
-LIFTING = 1 # lifting boat, motor on, valves open
+LIFTING = 1 # lifting boat, motor on, valves open, lift to stadard position
+LIFTING_MAX = 4 # lifting boat, motor on, valves open, lift all the way to top 
 LOWERING = 2 # lowering boat, motor off, valves open
-BYPASSING = 3 # all valves open, motor off
+BYPASSING_BLOWER_OFF = 3 # all valves open, motor off
+BYPASSING_BLOWER_ON = 5 # all valves open, motor off
 
 # position of lift
+LIFTED_MAX = 3
 LIFTED = 1
 LOWERED = 2
 UNKNOWN = 0
 
 # ultrasound distances
-HEIGHT_LOWERED = 20 #cm
-HEIGHT_RAISED = 80 #cm
+#HEIGHT_LOWERED = 20 #cm
+#HEIGHT_RAISED = 80 #cm
 
 ROLL_GOAL = 0
-PITCH_GOAL = 2
+PITCH_GOAL = 2 # bow up slightly
 ROLL_RANGE = 3
 PITCH_RANGE = 3
 ROLL_SAFETY = 10 # max roll safety
@@ -78,6 +85,7 @@ mode_expire_minutes = None
 # position
 position = UNKNOWN
 
+
 """
 
 Initialize
@@ -87,31 +95,65 @@ Initialize
 
 GPIO.setmode(GPIO.BOARD)
 
+def set_lift_mode(mode): # call to set the operation of the lift
+    global request_mode
+    request_mode = mode    
 
 # push buttons
-def push_button_callback(button_mode):
-    global request_mode
-    request_mode = button_mode
-    print ("Mode request {}".format(request_mode))
+def push_button_callback(mode,modifier):
+    print ("Mode request {}, modifier {}".format(mode,modifier))
+
+    if mode =='LIFT':
+        if modifier == 'LONG':
+            set_lift_mode(LIFTING_MAX)
+        else:
+            set_lift_mode(LIFTING)
+    elif mode == 'LOWER':
+        set_lift_mode(LOWER)
+    elif mode =='BYPASS':
+        if modifier == 'LONG':
+            set_lift_mode(BYPASS_BLOWER_OFF)
+        else:
+            set_lift_mode(BYPASS_BLOWER_ON)
+    elif mode == 'STOP':
+        set_lift_mode (STOP)
 
 lift_buttons = Push_Buttons(push_button_callback)
 
+#button leds
 lift_LEDs = LEDs()
 
+
+#position
+def lift_position_callback(pos):
+    global position
+    position = pos
+    print ('Lift postion ',position)
+
+lift_position = Lift_Position(lift_position_callback)
+
+
+
+#valves
 lift_valves = Valves()
 
+#blower motor
 lift_motor = Blower_Motor()
 
+#roll and pitch
 lift_roll_pitch = Roll_Pitch()
 
-lift_height = UltraSonic()
+#MQTT
+#lift_mqtt = Lift_MQTT ()
+#lift_mqtt.connect(push_button_callback)
 
-lift_mqtt = Lift_MQTT ()
-lift_mqtt.connect(push_button_callback)
-
-def start_lifting ():
+#functions to start a mode
+def start_lifting (max_lift):
     global current_mode 
-    current_mode = LIFTING
+    if max_lift:
+        current_mode = LIFTING_MAX
+    else:
+        current_mode = LIFTING
     lift_LEDs.set_lift()
     lift_motor.on()
     global mode_start_time 
@@ -129,11 +171,15 @@ def start_lowering ():
     global mode_expire_minutes
     mode_expire_minutes = 10
 
-def start_bypassing ():
-    global current_mode 
-    current_mode = BYPASSING
-    lift_LEDs.set_bypass()
-    lift_motor.off()  
+def start_bypassing (bloweron):
+    global current_mode
+    if bloweron: 
+        current_mode = BYPASSING_BLOWER_ON
+        lift_motor.on()  
+    else:
+        current_mode = BYPASSING_BLOWER_OFF
+        lift_motor.off()  
+    lift_LEDs.set_bypass() 
     lift_valves.set_all (True,True,True,True)
     global mode_start_time 
     mode_start_time = datetime.datetime.now()
@@ -148,20 +194,13 @@ def start_idle ():
     lift_motor.off()  
     lift_valves.set_all (False,False,False,False)
 
-    height = lift_height.distance()
+    position = lift_position.get()
 
-    if height and height > HEIGHT_RAISED:
-        position = LIFTED
-    elif height < HEIGHT_LOWERED:
-        position = LOWERED
-    else:
-        position = UNKNOWN
-
-    print ("Lift position {}  Height {}".format(position,height))
+    print ("Lift position {}".format(position))
 
     if position == UNKNOWN:
         lift_LEDs.set_unknown()
-    elif position == LIFTED:
+    elif position == LIFTED or position == LIFTED_MAX:
         lift_LEDs.set_lifted()
     elif position == LOWERED:
         lift_LEDs.set_lowered()
@@ -177,71 +216,63 @@ try:
         if request_mode != None: # user requested a change
             print ("Mode requested {}".format(request_mode))
             
-            if request_mode == "LIFT":
-                start_lifting() 
-            elif request_mode == "LOWER":
+            if request_mode == LIFT or request_mode == LIFT_MAX:
+                start_lifting(request_mode == LIFT_MAX) 
+            elif request_mode == LOWER:
                 start_lowering() 
-            elif request_mode == "BYPASS":
-                start_bypassing() 
-            elif request_mode == "STOP":
+            elif request_mode == BYPASS_BLOWER_OFF:
+                start_bypassing(False) 
+            elif request_mode == BYPASS_BLOWER_ON:
+                start_bypassing(False) 
+            elif request_mode == STOP:
                 start_idle() 
 
             request_mode = None
 
-        if current_mode == LIFTING:
+        if current_mode == LIFTING or current_mode == LIFTING_MAX:
             roll,pitch = lift_roll_pitch.read()
             lift_valves.lifting(roll,pitch,ROLL_GOAL,PITCH_GOAL,ROLL_RANGE,PITCH_RANGE)
             safe = lift_roll_pitch.check_within_parameters(ROLL_SAFETY,PITCH_SAFETY)
 
-            height = lift_height.distance()
-
-            if height and height > HEIGHT_RAISED:
-                position = LIFTED
+            if (current_mode == LIFTING and (lift_position.is_lifted() or lift_position.is_lifted_max())) or (current_mode == LIFTING_MAX and lift_position.is_lifted_max()):
                 start_idle() 
 
-            print("Roll: {}  Pitch {}   Within parameters {}   Height {}".format (roll,pitch, safe, height))
-            payload = "Roll: {}  Pitch {}   Within parameters {}   Height {}".format (roll,pitch, safe, height)
-            lift_mqtt.publish("boatlift",payload)
+            print("Roll: {}  Pitch {}   Within parameters {}   Position {}".format (roll,pitch, safe, position))
+            payload = "Roll: {}  Pitch {}   Within parameters {}   Position {}".format (roll,pitch, safe, position)
+            #lift_mqtt.publish("boatlift",payload)
     
         elif current_mode == LOWERING:
             roll,pitch = lift_roll_pitch.read()
             lift_valves.lowering(roll,pitch,ROLL_GOAL,PITCH_GOAL,ROLL_RANGE,PITCH_RANGE)
             safe = lift_roll_pitch.check_within_parameters(ROLL_SAFETY,PITCH_SAFETY)
 
-            height = lift_height.distance()
-            
-            if height and height < HEIGHT_LOWERED:
-                position = LOWERED
+            if lift_position.is_lowered():
                 start_idle() 
 
-            print("Roll: {}  Pitch {}   Within parameters {}   Height {}".format (roll,pitch, safe, height))
-            payload = "Roll: {}  Pitch {}   Within parameters {}   Height {}".format (roll,pitch, safe, height)
-            lift_mqtt.publish("boatlift",payload)
+            print("Roll: {}  Pitch {}   Within parameters {}   Position {}".format (roll,pitch, safe, position))
+            payload = "Roll: {}  Pitch {}   Within parameters {}   Position {}".format (roll,pitch, safe, position)
+            #lift_mqtt.publish("boatlift",payload)
 
-        elif current_mode == BYPASSING:
+        elif current_mode == BYPASSING_BLOWER_OFF or current_mode == BYPASSING_BLOWER_ON:
             roll,pitch = lift_roll_pitch.read()
-            lift_valves.lowering(roll,pitch,ROLL_GOAL,PITCH_GOAL,ROLL_RANGE,PITCH_RANGE)
             safe = lift_roll_pitch.check_within_parameters(ROLL_SAFETY,PITCH_SAFETY)
-
-            height = lift_height.distance()
             
-            print("Roll: {}  Pitch {}   Within parameters {}   Height {}".format (roll,pitch, safe, height))
-            payload = "Roll: {}  Pitch {}   Within parameters {}   Height {}".format (roll,pitch, safe, height)
-            lift_mqtt.publish("boatlift",payload)
+            print("Roll: {}  Pitch {}   Within parameters {}   Position {}".format (roll,pitch, safe, position))
+            payload = "Roll: {}  Pitch {}   Within parameters {}   Position {}".format (roll,pitch, safe, position)
+            #lift_mqtt.publish("boatlift",payload)
     
         # check how long we have been running
         if mode_start_time != None:
             if (datetime.datetime.now() - mode_start_time).seconds > mode_expire_minutes*60: 
                 print ("Watch dog time expired")
-                position = UNKNOWN
                 start_idle()
 
         time.sleep (.2)
 
         #remove
-        #height = lift_height.distance()
+        #position = lift_position.distance()
         #roll,pitch = lift_roll_pitch.read()
-        #print("Roll: {}  Pitch {}    Height {}".format (roll,pitch, height))
+        #print("Roll: {}  Pitch {}    Position {}".format (roll,pitch, position))
 
 except KeyboardInterrupt:
     print("Stopped by User")
