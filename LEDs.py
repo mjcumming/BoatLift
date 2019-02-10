@@ -56,6 +56,12 @@ class LEDs:
         self.list ["bypass"].on()
         self.list ["stop"].off()
 
+    def set_lifted_max(self):
+        self.list ["lift"].off()
+        self.list ["lower"].on()
+        self.list ["bypass"].on()
+        self.list ["stop"].off()
+
     def set_lowered(self):
         self.list ["lift"].on()
         self.list ["lower"].off()

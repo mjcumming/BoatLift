@@ -26,7 +26,7 @@ from push_buttons import Push_Buttons
 from blower_motor import Blower_Motor
 #from ultrasonic_sensor import UltraSonic
 from lift_position import Lift_Position
-#from lift_mqtt import Lift_MQTT
+from lift_mqtt import Lift_MQTT
 
 
 """
@@ -85,6 +85,9 @@ mode_expire_minutes = None
 # position
 position = UNKNOWN
 
+# timer to send updates
+update_interval = 6 # seconds
+last_update_time = time.time()
 
 """
 
@@ -144,8 +147,8 @@ lift_motor = Blower_Motor()
 lift_roll_pitch = Roll_Pitch()
 
 #MQTT
-#lift_mqtt = Lift_MQTT ()
-#lift_mqtt.connect(push_button_callback)
+lift_mqtt = Lift_MQTT ()
+lift_mqtt.connect(push_button_callback)
 
 #functions to start a mode
 def start_lifting (max_lift):
@@ -157,7 +160,7 @@ def start_lifting (max_lift):
     lift_LEDs.set_lift()
     lift_motor.on()
     global mode_start_time 
-    mode_start_time = datetime.datetime.now()
+    mode_start_time = time.time()
     global mode_expire_minutes
     mode_expire_minutes = 4
 
@@ -167,7 +170,7 @@ def start_lowering ():
     lift_LEDs.set_lower()
     lift_motor.off()  
     global mode_start_time 
-    mode_start_time = datetime.datetime.now()
+    mode_start_time = time.time()
     global mode_expire_minutes
     mode_expire_minutes = 10
 
@@ -182,7 +185,7 @@ def start_bypassing (bloweron):
     lift_LEDs.set_bypass() 
     lift_valves.set_all (True,True,True,True)
     global mode_start_time 
-    mode_start_time = datetime.datetime.now()
+    mode_start_time = time.time()
     global mode_expire_minutes
     mode_expire_minutes = 10
 
@@ -200,8 +203,10 @@ def start_idle ():
 
     if position == UNKNOWN:
         lift_LEDs.set_unknown()
-    elif position == LIFTED or position == LIFTED_MAX:
+    elif position == LIFTED:
         lift_LEDs.set_lifted()
+    elif position == LIFTED_MAX:
+        lift_LEDs.set_lifted_max()
     elif position == LOWERED:
         lift_LEDs.set_lowered()
 
@@ -239,7 +244,7 @@ try:
 
             print("Roll: {}  Pitch {}   Within parameters {}   Position {}".format (roll,pitch, safe, position))
             payload = "Roll: {}  Pitch {}   Within parameters {}   Position {}".format (roll,pitch, safe, position)
-            #lift_mqtt.publish("boatlift",payload)
+            lift_mqtt.publish("boatlift",payload)
     
         elif current_mode == LOWERING:
             roll,pitch = lift_roll_pitch.read()
@@ -251,7 +256,7 @@ try:
 
             print("Roll: {}  Pitch {}   Within parameters {}   Position {}".format (roll,pitch, safe, position))
             payload = "Roll: {}  Pitch {}   Within parameters {}   Position {}".format (roll,pitch, safe, position)
-            #lift_mqtt.publish("boatlift",payload)
+            lift_mqtt.publish("boatlift",payload)
 
         elif current_mode == BYPASSING_BLOWER_OFF or current_mode == BYPASSING_BLOWER_ON:
             roll,pitch = lift_roll_pitch.read()
@@ -259,20 +264,27 @@ try:
             
             print("Roll: {}  Pitch {}   Within parameters {}   Position {}".format (roll,pitch, safe, position))
             payload = "Roll: {}  Pitch {}   Within parameters {}   Position {}".format (roll,pitch, safe, position)
-            #lift_mqtt.publish("boatlift",payload)
+            lift_mqtt.publish("boatlift",payload)
     
         # check how long we have been running
         if mode_start_time != None:
-            if (datetime.datetime.now() - mode_start_time).seconds > mode_expire_minutes*60: 
+            elapsed_time = time.time() - mode_start_time
+            print ('Elapsed Time: {}'.format(elapsed_time))
+            
+            if elapsed_time > mode_expire_minutes*60: 
                 print ("Watch dog time expired")
                 start_idle()
 
         time.sleep (.2)
 
-        #remove
-        #position = lift_position.distance()
-        #roll,pitch = lift_roll_pitch.read()
-        #print("Roll: {}  Pitch {}    Position {}".format (roll,pitch, position))
+        if (time.time() - last_update_time) > update_interval:
+            last_update_time = time.time()
+            position = lift_position.get()
+            roll,pitch = lift_roll_pitch.read()
+            safe = lift_roll_pitch.check_within_parameters(ROLL_SAFETY,PITCH_SAFETY)
+            print("Roll: {}  Pitch {}    Position {}".format (roll,pitch, position))
+            payload = "Roll: {}  Pitch {}   Within parameters {}   Position {}".format (roll,pitch, safe, position)
+            lift_mqtt.publish("boatlift",payload)
 
 except KeyboardInterrupt:
     print("Stopped by User")

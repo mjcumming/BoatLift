@@ -38,9 +38,10 @@ class Lift_MQTT:
 
     # The callback for when a PUBLISH message is received from the server.
     def on_message(self, client, userdata, msg):
-        print(msg.topic+" "+str(msg.payload))
+        print('MQTT')
+        print('MQTT Message: Topic {}, Payload {}'.format(msg.topic,msg.payload.decode("utf-8")))
   
-        self.button_callback(msg.payload)
+        self.button_callback(msg.payload.decode("utf-8"),'')
 
 
     def publish(self,msg,payload):
