@@ -20,18 +20,23 @@ class Valve:
         GPIO.output(self.pin, GPIO.LOW)        
 
     def set(self, tf):
-        #print ("Valve {} is {}".format (self.name,tf))
+        print ("Valve {} is {}".format (self.name,tf))
         GPIO.output(self.pin, tf)        
+
+    def get(self):
+        return GPIO.input(self.pin)        
 
 
 
 if __name__ == "__main__":
     GPIO.setmode(GPIO.BOARD)
-    valve = Valve ("Test", 29)
+    valve = Valve ("Test", 35)
  
     while True:
         valve.set(True)
-        time.sleep (1)
+        print(valve.get())
+        time.sleep (5)
 
         valve.set(False)
-        time.sleep (1)
+        print(valve.get())
+        time.sleep (5)

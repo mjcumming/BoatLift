@@ -17,6 +17,9 @@ i2c_bus = 1
 device_address = 0x68
 radToDeg = 57.2957786
 
+PITCH_OFFSET = 0
+ROLL_OFFSET = 0
+
 class Inclinometer:
 
     RestrictPitch = True 
@@ -122,7 +125,7 @@ class Inclinometer:
             self.gyroYAngle = self.kalAngleY
 
         #print("Angle X: " + str(self.kalAngleX)+"   " +"Angle Y: " + str(self.kalAngleY))
-        return int(self.kalAngleX),int(self.kalAngleY)
+        return int(self.kalAngleX+ROLL_OFFSET),int(self.kalAngleY+PITCH_OFFSET)
                      
 if __name__ == "__main__":
     inc = Inclinometer()

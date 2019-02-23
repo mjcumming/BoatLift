@@ -68,6 +68,7 @@ PITCH_RANGE = 3
 ROLL_SAFETY = 10 # max roll safety
 PITCH_SAFETY = 10 # max pitch before error
 
+SAFETY_ENABLED = True # abort operation is unsafe angles
 """
 
 Globals
@@ -201,16 +202,29 @@ def start_idle ():
 
     print ("Lift position {}".format(position))
 
-    if position == UNKNOWN:
-        lift_LEDs.set_unknown()
-    elif position == LIFTED:
-        lift_LEDs.set_lifted()
-    elif position == LIFTED_MAX:
-        lift_LEDs.set_lifted_max()
-    elif position == LOWERED:
-        lift_LEDs.set_lowered()
+    def is_lifted(self):
+        return self.get()=='LIFTED'
 
-print ("Starting")
+    def is_lifted_max(self):
+        return self.get()=='LIFTEDMAX'
+
+    def is_lowered(self):
+        return self.get()=='LOWERED'
+
+    if lift_position.is_lifted():
+        lift_LEDs.set_lifted()
+    elif lift_position.is_lifted_max():
+        lift_LEDs.set_lifted_max()
+    elif lift_position.is_lowered():
+        lift_LEDs.set_lowered()
+    else:
+        lift_LEDs.set_unknown()
+
+def start_abort():
+    print ('ABORTING')
+    start_idle()
+
+print ("Starting Boat Lift")
 
 start_idle() 
 
@@ -245,6 +259,9 @@ try:
             print("Roll: {}  Pitch {}   Within parameters {}   Position {}".format (roll,pitch, safe, position))
             payload = "Roll: {}  Pitch {}   Within parameters {}   Position {}".format (roll,pitch, safe, position)
             lift_mqtt.publish("boatlift",payload)
+
+            if SAFETY_ENABLED and not safe:
+                start_abort()
     
         elif current_mode == LOWERING:
             roll,pitch = lift_roll_pitch.read()
@@ -258,6 +275,9 @@ try:
             payload = "Roll: {}  Pitch {}   Within parameters {}   Position {}".format (roll,pitch, safe, position)
             lift_mqtt.publish("boatlift",payload)
 
+            if SAFETY_ENABLED and not safe:
+                start_abort()
+
         elif current_mode == BYPASSING_BLOWER_OFF or current_mode == BYPASSING_BLOWER_ON:
             roll,pitch = lift_roll_pitch.read()
             safe = lift_roll_pitch.check_within_parameters(ROLL_SAFETY,PITCH_SAFETY)
@@ -270,7 +290,7 @@ try:
         if mode_start_time != None:
             elapsed_time = time.time() - mode_start_time
             print ('Elapsed Time: {}'.format(elapsed_time))
-            
+
             if elapsed_time > mode_expire_minutes*60: 
                 print ("Watch dog time expired")
                 start_idle()
