@@ -202,15 +202,6 @@ def start_idle ():
 
     print ("Lift position {}".format(position))
 
-    def is_lifted(self):
-        return self.get()=='LIFTED'
-
-    def is_lifted_max(self):
-        return self.get()=='LIFTEDMAX'
-
-    def is_lowered(self):
-        return self.get()=='LOWERED'
-
     if lift_position.is_lifted():
         lift_LEDs.set_lifted()
     elif lift_position.is_lifted_max():

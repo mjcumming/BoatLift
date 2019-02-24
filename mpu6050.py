@@ -76,7 +76,7 @@ class mpu6050:
         Returns the combined read results.
         """
         # Read the data from the registers
-        high = self.bus.read_byte_data(self.address, register)
+        high = self.bus.read_byte_data(self.address, register)        #OSError: [Errno 121] Remote I/O error
         low = self.bus.read_byte_data(self.address, register + 1)
 
         value = (high << 8) + low

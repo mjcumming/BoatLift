@@ -82,7 +82,7 @@ if __name__ == "__main__":
     leds = LEDs ()
  
     while True:
-        #leds.all_on()
+        leds.all_on()
         #time.sleep (1)
 
         #leds.all_off()
@@ -91,7 +91,7 @@ if __name__ == "__main__":
         #leds.all_flash()
         #time.sleep (10)        
 
-        leds.set_lift()
+        #leds.set_lift()
         time.sleep (10)        
 
 
