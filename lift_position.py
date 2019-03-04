@@ -24,8 +24,8 @@ from float_switch import Float_Switch
 
 float_switch_list = {
     "BOTTOM" : 16,  #BOARD
-    "MIDDLE" : 18,
-    "TOP" : 22,
+    "MIDDLE" : 22,
+    "TOP" : 18,
 }
 
 class Lift_Position:
