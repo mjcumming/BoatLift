@@ -18,9 +18,11 @@ class Push_Button:
         self.start_time = None
 
         def button_callback(channel):
-            print ('button callback',channel, GPIO.input(channel))
+            time.sleep (.2)
+            input = GPIO.input(channel)
+            print ('button callback',channel, input)
             
-            if GPIO.input(channel) == 1:
+            if input == 1:
                 self.start_time = time.time()
             elif self.start_time:
                 elapsed_time = time.time() - self.start_time

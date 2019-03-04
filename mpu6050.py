@@ -54,10 +54,17 @@ class mpu6050:
     ACCEL_CONFIG = 0x1C
     GYRO_CONFIG  = 0x1B
 
+    MAX_READ_ERRORS = 5
 
-    def __init__(self, address, bus=1):
+
+    def __init__(self, address, bus_id=1):
         self.address = address
-        self.bus = smbus.SMBus(bus)
+        self.bus_id = bus_id
+
+        self.initialize_smbus()
+
+    def initialize_smbus(self):
+        self.bus = smbus.SMBus(self.bus_id)
         # Wake up the MPU-6050 since it starts in sleep mode
         self.bus.write_byte_data(self.address, self.PWR_MGMT_1, 0x01)
         
@@ -65,10 +72,24 @@ class mpu6050:
         self.bus.write_byte_data(self.address, self.CONFIG, 0)
 
         #Write to Gyro configuration register
-        self.bus.write_byte_data(self.address, self.GYRO_CONFIG, 24)        
+        self.bus.write_byte_data(self.address, self.GYRO_CONFIG, 24)      
+
+    def read_byte(self,register):
+        errors = 0
+        success = False
+        byte = None
+
+        while success is False and errors < self.MAX_READ_ERRORS:
+            try:
+                byte = self.bus.read_byte_data(self.address, register)            
+                success = True
+            except IOError:
+                errors = errors + 1
+                print ('mpu 6050 IO error')
+
+        return byte
 
     # I2C communication methods
-
     def read_i2c_word(self, register):
         """Read two i2c registers and combine them.
 
@@ -76,8 +97,12 @@ class mpu6050:
         Returns the combined read results.
         """
         # Read the data from the registers
-        high = self.bus.read_byte_data(self.address, register)        #OSError: [Errno 121] Remote I/O error
-        low = self.bus.read_byte_data(self.address, register + 1)
+        try:
+            high = self.read_byte(register)        #OSError: [Errno 121] Remote I/O error
+            low = self.read_byte(register + 1)
+        except IOError:
+            print ('mpu 6050 IO error')
+        
 
         value = (high << 8) + low
 

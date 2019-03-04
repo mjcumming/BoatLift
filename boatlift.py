@@ -68,7 +68,9 @@ PITCH_RANGE = 3
 ROLL_SAFETY = 10 # max roll safety
 PITCH_SAFETY = 10 # max pitch before error
 
-SAFETY_ENABLED = True # abort operation is unsafe angles
+SAFETY_ENABLED = True # abort operation if unsafe angles
+
+
 """
 
 Globals
@@ -233,52 +235,45 @@ try:
             elif request_mode == BYPASS_BLOWER_OFF:
                 start_bypassing(False) 
             elif request_mode == BYPASS_BLOWER_ON:
-                start_bypassing(False) 
+                start_bypassing(True) 
             elif request_mode == STOP:
                 start_idle() 
 
             request_mode = None
 
+        roll,pitch = lift_roll_pitch.read()
+        safe = lift_roll_pitch.check_within_parameters(ROLL_SAFETY,PITCH_SAFETY)
+        position = lift_position.get()
+
+        if (time.time() - last_update_time) > update_interval:
+            last_update_time = time.time()
+
+            payload = "Roll: {}  Pitch {}   Within parameters {}   Position {}    Mode {} ".format (roll,pitch, safe, position, current_mode)
+            lift_mqtt.publish("boatlift",payload)
+            print(payload)
+
         if current_mode == LIFTING or current_mode == LIFTING_MAX:
-            roll,pitch = lift_roll_pitch.read()
             lift_valves.lifting(roll,pitch,ROLL_GOAL,PITCH_GOAL,ROLL_RANGE,PITCH_RANGE)
-            safe = lift_roll_pitch.check_within_parameters(ROLL_SAFETY,PITCH_SAFETY)
 
             if (current_mode == LIFTING and (lift_position.is_lifted() or lift_position.is_lifted_max())) or (current_mode == LIFTING_MAX and lift_position.is_lifted_max()):
                 start_idle() 
-
-            print("Roll: {}  Pitch {}   Within parameters {}   Position {}".format (roll,pitch, safe, position))
-            payload = "Roll: {}  Pitch {}   Within parameters {}   Position {}".format (roll,pitch, safe, position)
-            lift_mqtt.publish("boatlift",payload)
 
             if SAFETY_ENABLED and not safe:
                 start_abort()
     
         elif current_mode == LOWERING:
-            roll,pitch = lift_roll_pitch.read()
             lift_valves.lowering(roll,pitch,ROLL_GOAL,PITCH_GOAL,ROLL_RANGE,PITCH_RANGE)
-            safe = lift_roll_pitch.check_within_parameters(ROLL_SAFETY,PITCH_SAFETY)
 
             if lift_position.is_lowered():
                 start_idle() 
 
-            print("Roll: {}  Pitch {}   Within parameters {}   Position {}".format (roll,pitch, safe, position))
-            payload = "Roll: {}  Pitch {}   Within parameters {}   Position {}".format (roll,pitch, safe, position)
-            lift_mqtt.publish("boatlift",payload)
-
             if SAFETY_ENABLED and not safe:
                 start_abort()
 
-        elif current_mode == BYPASSING_BLOWER_OFF or current_mode == BYPASSING_BLOWER_ON:
-            roll,pitch = lift_roll_pitch.read()
+        elif current_mode == BYPASSING_BLOWER_OFF or current_mode == BYPASSING_BLOWER_ON: # NOT WORKING
             safe = lift_roll_pitch.check_within_parameters(ROLL_SAFETY,PITCH_SAFETY)
             
-            print("Roll: {}  Pitch {}   Within parameters {}   Position {}".format (roll,pitch, safe, position))
-            payload = "Roll: {}  Pitch {}   Within parameters {}   Position {}".format (roll,pitch, safe, position)
-            lift_mqtt.publish("boatlift",payload)
-    
         # check how long we have been running
-        if mode_start_time != None:
             elapsed_time = time.time() - mode_start_time
             print ('Elapsed Time: {}'.format(elapsed_time))
 
@@ -287,15 +282,6 @@ try:
                 start_idle()
 
         time.sleep (.2)
-
-        if (time.time() - last_update_time) > update_interval:
-            last_update_time = time.time()
-            position = lift_position.get()
-            roll,pitch = lift_roll_pitch.read()
-            safe = lift_roll_pitch.check_within_parameters(ROLL_SAFETY,PITCH_SAFETY)
-            print("Roll: {}  Pitch {}    Position {}".format (roll,pitch, position))
-            payload = "Roll: {}  Pitch {}   Within parameters {}   Position {}".format (roll,pitch, safe, position)
-            lift_mqtt.publish("boatlift",payload)
 
 except KeyboardInterrupt:
     print("Stopped by User")
