@@ -20,7 +20,7 @@ class Valve:
         GPIO.output(self.pin, GPIO.LOW)        
 
     def set(self, tf):
-        print ("Valve {} is {}".format (self.name,tf))
+        #print ("Valve {} is {}".format (self.name,tf))
         GPIO.output(self.pin, tf)        
 
     def get(self):

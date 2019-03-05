@@ -251,6 +251,7 @@ try:
             payload = "Roll: {}  Pitch {}   Within parameters {}   Position {}    Mode {} ".format (roll,pitch, safe, position, current_mode)
             lift_mqtt.publish("boatlift",payload)
             print(payload)
+            lift_valves.print()
 
         if current_mode == LIFTING or current_mode == LIFTING_MAX:
             lift_valves.lifting(roll,pitch,ROLL_GOAL,PITCH_GOAL,ROLL_RANGE,PITCH_RANGE)
@@ -274,8 +275,9 @@ try:
             safe = lift_roll_pitch.check_within_parameters(ROLL_SAFETY,PITCH_SAFETY)
             
         # check how long we have been running
+        if mode_start_time != None:
             elapsed_time = time.time() - mode_start_time
-            print ('Elapsed Time: {}'.format(elapsed_time))
+            #print ('Elapsed Time: {}'.format(elapsed_time))
 
             if elapsed_time > mode_expire_minutes*60: 
                 print ("Watch dog time expired")

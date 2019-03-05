@@ -18,9 +18,9 @@ class Push_Button:
         self.start_time = None
 
         def button_callback(channel):
-            time.sleep (.2)
+            time.sleep (.2) #for some reason we need this delay to get the proper value when using the 6050 at the same time. GPIO library bug
             input = GPIO.input(channel)
-            print ('button callback',channel, input)
+            #print ('button callback',channel, input)
             
             if input == 1:
                 self.start_time = time.time()
