@@ -33,11 +33,11 @@ class Valves:
         print(' {}   {}'.format(self.list ["stern_port"].get() == True and '*' or '-',self.list ["stern_starboard"].get() == True and '*' or '-'))
     
     def open_all (self):
-        for name,valve in self.list.items():
+        for _,valve in self.list.items():
             valve.open()
 
     def close_all (self):
-        for name,valve in self.list.items():
+        for _,valve in self.list.items():
             valve.close()
 
     def set_all (self, bs, bp, ss, sp):

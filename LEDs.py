@@ -21,15 +21,15 @@ class LEDs:
             self.list [name] = LED (bcm)
     
     def all_on (self):
-        for name,LED in self.list.items():
+        for _,LED in self.list.items():
             LED.on()
 
     def all_off (self):
-        for name,LED in self.list.items():
+        for _,LED in self.list.items():
             LED.off()
 
     def all_flash (self):
-        for name,LED in self.list.items():
+        for _,LED in self.list.items():
             LED.flash()
 
     def set_lift(self):
