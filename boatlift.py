@@ -62,7 +62,7 @@ UNKNOWN = 0
 #HEIGHT_RAISED = 80 #cm
 
 ROLL_GOAL = 0
-PITCH_GOAL = 2 # bow up slightly
+PITCH_GOAL = -2 # bow up slightly
 ROLL_RANGE = 3
 PITCH_RANGE = 3
 ROLL_SAFETY = 10 # max roll safety
@@ -111,9 +111,9 @@ def push_button_callback(mode,modifier):
 
     if mode =='LIFT':
         if modifier == 'LONG':
-            set_lift_mode(LIFTING_MAX)
+            set_lift_mode(LIFT_MAX)
         else:
-            set_lift_mode(LIFTING)
+            set_lift_mode(LIFT)
     elif mode == 'LOWER':
         set_lift_mode(LOWER)
     elif mode =='BYPASS':
@@ -155,6 +155,7 @@ lift_mqtt.connect(push_button_callback)
 
 #functions to start a mode
 def start_lifting (max_lift):
+    print('start lifting',max_lift)
     global current_mode 
     if max_lift:
         current_mode = LIFTING_MAX
@@ -202,7 +203,7 @@ def start_idle ():
 
     position = lift_position.get()
 
-    print ("Lift position {}".format(position))
+    #print ("Lift position {}".format(position))
 
     if lift_position.is_lifted():
         lift_LEDs.set_lifted()
@@ -216,6 +217,7 @@ def start_idle ():
 def start_abort():
     print ('ABORTING')
     start_idle()
+    lift_LEDs.set_error()
 
 print ("Starting Boat Lift")
 
@@ -245,13 +247,19 @@ try:
         safe = lift_roll_pitch.check_within_parameters(ROLL_SAFETY,PITCH_SAFETY)
         position = lift_position.get()
 
-        if (time.time() - last_update_time) > update_interval:
+        if SAFETY_ENABLED and not safe:
+            start_abort()
+
+        if current_mode == IDLE and safe:
+            start_idle()
+    
+        if current_mode != IDLE or (time.time() - last_update_time) > update_interval:
             last_update_time = time.time()
 
             payload = "Roll: {}  Pitch {}   Within parameters {}   Position {}    Mode {} ".format (roll,pitch, safe, position, current_mode)
             lift_mqtt.publish("boatlift",payload)
             print(payload)
-            lift_valves.print()
+            #lift_valves.print()
 
         if current_mode == LIFTING or current_mode == LIFTING_MAX:
             lift_valves.lifting(roll,pitch,ROLL_GOAL,PITCH_GOAL,ROLL_RANGE,PITCH_RANGE)
@@ -259,17 +267,11 @@ try:
             if (current_mode == LIFTING and (lift_position.is_lifted() or lift_position.is_lifted_max())) or (current_mode == LIFTING_MAX and lift_position.is_lifted_max()):
                 start_idle() 
 
-            if SAFETY_ENABLED and not safe:
-                start_abort()
-    
         elif current_mode == LOWERING:
             lift_valves.lowering(roll,pitch,ROLL_GOAL,PITCH_GOAL,ROLL_RANGE,PITCH_RANGE)
 
             if lift_position.is_lowered():
                 start_idle() 
-
-            if SAFETY_ENABLED and not safe:
-                start_abort()
 
         elif current_mode == BYPASSING_BLOWER_OFF or current_mode == BYPASSING_BLOWER_ON: # NOT WORKING
             safe = lift_roll_pitch.check_within_parameters(ROLL_SAFETY,PITCH_SAFETY)
@@ -283,7 +285,7 @@ try:
                 print ("Watch dog time expired")
                 start_idle()
 
-        time.sleep (.2)
+        time.sleep (.5)
 
 except KeyboardInterrupt:
     print("Stopped by User")

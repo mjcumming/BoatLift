@@ -24,8 +24,16 @@ class Roll_Pitch:
 
 
     def __init__(self):
-        self.inclinometer = Inclinometer()
 
+        success = False
+
+        while success is False:
+            try:
+                self.inclinometer = Inclinometer()
+                success = True
+            except IOError:
+                print ('mpu 6050 IO error')
+                time.sleep(1)
     
     def read(self): # return so that roll/pitch are 0 when level, + numbers = leaning to starboard or bow
         x,y = self.inclinometer.get_angles() # as setup, the inclinometer does not ever return a pitch of 180 - not why. so we never get a pitch of 0 if we use 180 instead of 179

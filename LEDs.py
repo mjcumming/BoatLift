@@ -74,6 +74,11 @@ class LEDs:
         self.list ["bypass"].on()
         self.list ["stop"].off()
 
+    def set_error(self):
+        self.list ["lift"].off()
+        self.list ["lower"].off()
+        self.list ["bypass"].off()
+        self.list ["stop"].flash()
 
 
 
