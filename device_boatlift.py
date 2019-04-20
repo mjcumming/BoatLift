@@ -23,16 +23,19 @@ class Device_BoatLift(Device_Base):
         node = (Node_Base(self,'boatlift','Boat Lift','boatlift'))
         self.add_node (node)
 
-        self.lift_mode = Property_Enum (node,id='liftmode',name='Lift Mode',data_format=','.join(LIFT_MODES),set_value = lambda value: self.set_lift_mode(value) )
+        self.set_lift_mode = Property_Enum (node,id='setliftmode',name='Set Lift Mode',data_format=','.join(LIFT_MODES),set_value = lambda value: self.set_lift_mode(value) )
+        node.add_property (self.set_lift_mode)
+
+        self.lift_mode = Property_String (node,id='liftmode',name='Lift Mode')
         node.add_property (self.lift_mode)
 
-        self.lift_position = Property_String (node,id='liftposition',name='Lift Position')
+        self.lift_position = Property_String (node,id='position',name='Position')
         node.add_property (self.lift_position)
 
-        self.lift_roll = Property_String (node,id='liftroll',name='Lift Roll')
+        self.lift_roll = Property_String (node,id='roll',name='Roll')
         node.add_property (self.lift_roll)
 
-        self.lift_pitch = Property_String (node,id='liftpitch',name='Lift Pitch')
+        self.lift_pitch = Property_String (node,id='pitch',name='Pitch')
         node.add_property (self.lift_pitch)
 
         self.start()

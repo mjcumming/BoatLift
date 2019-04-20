@@ -272,8 +272,18 @@ try:
         if current_mode != IDLE or (time.time() - last_update_time) > update_interval:
             last_update_time = time.time()
 
-            payload = "Roll: {}  Pitch {}   Within parameters {}   Position {}    Mode {} ".format (roll,pitch, safe, position, current_mode)
-            lift_mqtt.update(roll,pitch,position,current_mode)
+            text_mode = ''
+            if current_mode == IDLE:
+                text_mode ='IDLE'
+            elif current_mode == LIFTING:
+                text_mode ='LIFTING'
+            elif current_mode == LIFTING_MAX:
+                text_mode ='LIFTING MAX'
+            elif current_mode == LOWERING:
+                text_mode ='LOWERING'
+
+            payload = "Roll: {}  Pitch {}   Within parameters {}   Position {}    Mode {} ".format (roll,pitch, safe, position, text_mode)
+            lift_mqtt.update(roll,pitch,position,text_mode)
             print(payload)
             #lift_valves.print()
 
