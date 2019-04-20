@@ -26,7 +26,7 @@ from push_buttons import Push_Buttons
 from blower_motor import Blower_Motor
 #from ultrasonic_sensor import UltraSonic
 from lift_position import Lift_Position
-from lift_mqtt import Lift_MQTT
+from device_boatlift import Device_BoatLift
 
 
 """
@@ -63,8 +63,8 @@ UNKNOWN = 0
 
 ROLL_GOAL = 0
 PITCH_GOAL = -2 # bow up slightly
-ROLL_RANGE = 3
-PITCH_RANGE = 3
+ROLL_RANGE = 2
+PITCH_RANGE = 2
 ROLL_SAFETY = 10 # max roll safety
 PITCH_SAFETY = 10 # max pitch before error
 
@@ -91,6 +91,13 @@ position = UNKNOWN
 # timer to send updates
 update_interval = 6 # seconds
 last_update_time = time.time()
+
+        
+mqtt_settings = {
+    'MQTT_BROKER' : 'QueenMQTT',
+    'MQTT_PORT' : 1883,
+}
+
 
 """
 
@@ -150,8 +157,17 @@ lift_motor = Blower_Motor()
 lift_roll_pitch = Roll_Pitch()
 
 #MQTT
-lift_mqtt = Lift_MQTT ()
-lift_mqtt.connect(push_button_callback)
+def set_lift_mode_callback(mode):
+    if mode =='LIFT':
+        set_lift_mode(LIFT)
+    elif mode == 'LIFTMAX':
+        set_lift_mode(LIFT_MAX)
+    elif mode == 'LOWER':
+        set_lift_mode(LOWER)
+    elif mode == 'STOP':
+        set_lift_mode (STOP)
+
+lift_mqtt = Device_BoatLift(device_id='boatlift',name = 'Boat Lift',mqtt_settings=mqtt_settings,set_lift_mode=set_lift_mode_callback)
 
 #functions to start a mode
 def start_lifting (max_lift):
@@ -257,7 +273,7 @@ try:
             last_update_time = time.time()
 
             payload = "Roll: {}  Pitch {}   Within parameters {}   Position {}    Mode {} ".format (roll,pitch, safe, position, current_mode)
-            lift_mqtt.publish("boatlift",payload)
+            lift_mqtt.update(roll,pitch,position,current_mode)
             print(payload)
             #lift_valves.print()
 
