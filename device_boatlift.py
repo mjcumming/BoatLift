@@ -18,12 +18,10 @@ class Device_BoatLift(Device_Base):
 
         super().__init__ (device_id, name, homie_settings, mqtt_settings)
 
-        self.set_lift_mode=set_lift_mode
-
         node = (Node_Base(self,'boatlift','Boat Lift','boatlift'))
         self.add_node (node)
 
-        self.set_lift_mode = Property_Enum (node,id='setliftmode',name='Set Lift Mode',data_format=','.join(LIFT_MODES),set_value = lambda value: self.set_lift_mode(value) )
+        self.set_lift_mode = Property_Enum (node,id='setliftmode',name='Set Lift Mode',data_format=','.join(LIFT_MODES),set_value = lambda value: set_lift_mode(value) )
         node.add_property (self.set_lift_mode)
 
         self.lift_mode = Property_String (node,id='liftmode',name='Lift Mode')
