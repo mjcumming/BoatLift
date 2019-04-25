@@ -1,0 +1,12 @@
+[Unit]
+Description=Boat Lift
+After=multi-user.target
+
+[Service]
+User=pi
+Type=simple
+ExecStart=/usr/bin/python3 /home/automate/BoatLift/BoatLift/boatlift.py  
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target

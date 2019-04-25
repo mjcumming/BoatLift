@@ -8,7 +8,8 @@ pitch + = tilting to stern
 
 
 """
-
+import logging
+logger = logging.getLogger(__name__)
 
 from inclinometer import Inclinometer
 
@@ -32,7 +33,7 @@ class Roll_Pitch:
                 self.inclinometer = Inclinometer()
                 success = True
             except IOError:
-                print ('mpu 6050 IO error')
+                logging.error ('mpu 6050 IO error')
                 time.sleep(1)
     
     def read(self): # return so that roll/pitch are 0 when level, + numbers = leaning to starboard or bow
@@ -63,5 +64,5 @@ if __name__ == "__main__":
  
     while True:
         roll,pitch = rp.read()
-        print("Roll: {}  Pitch {}   Within parameters {}".format (roll,pitch, rp.check_within_parameters(10,10)))
+        logging.info("Roll: {}  Pitch {}   Within parameters {}".format (roll,pitch, rp.check_within_parameters(10,10)))
         time.sleep (1)

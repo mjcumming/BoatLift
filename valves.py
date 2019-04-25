@@ -26,12 +26,13 @@ class Valves:
     def __init__(self): # using GPIO.BOARD
         for name,bcm in valve_list.items():
             self.list [name] = Valve (name,bcm)
-
+    '''
     def print(self):
         print('   ^')
         print(' {}   {}'.format(self.list ["bow_port"].get() == True and '*' or '-',self.list ["bow_starboard"].get() == True and '*' or '-'))
         print(' {}   {}'.format(self.list ["stern_port"].get() == True and '*' or '-',self.list ["stern_starboard"].get() == True and '*' or '-'))
-    
+    '''  
+
     def open_all (self):
         for _,valve in self.list.items():
             valve.open()
@@ -114,6 +115,7 @@ class Valves:
         elif not self.get_valve("stern_port"): 
             if roll <= (roll_goal) and pitch <= (pitch_goal):
                 self.set_valve('stern_port',True)
+'''
 
 if __name__ == "__main__":
     GPIO.setmode(GPIO.BOARD)
@@ -166,7 +168,6 @@ if __name__ == "__main__":
     valves.print()
     valves.lowering(0,0,0,0,3,3) #leaning starboard and stern
     valves.print()
-'''
     while True:
         valves.open_all()
         time.sleep (5)

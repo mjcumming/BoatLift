@@ -4,6 +4,10 @@ Made by: MrTijn/Tijndagamer
 Released under the MIT License
 Copyright (c) 2015, 2016, 2017 MrTijn/Tijndagamer
 """
+import logging
+logger = logging.getLogger(__name__)
+
+
 
 import smbus
 
@@ -85,7 +89,7 @@ class mpu6050:
                 success = True
             except IOError:
                 errors = errors + 1
-                print ('mpu 6050 IO error')
+                logging.info ('mpu 6050 IO error')
 
         return byte
 
@@ -101,7 +105,7 @@ class mpu6050:
             high = self.read_byte(register)        #OSError: [Errno 121] Remote I/O error
             low = self.read_byte(register + 1)
         except IOError:
-            print ('mpu 6050 IO error')
+            logging.info ('mpu 6050 IO error')
         
 
         value = (high << 8) + low
@@ -195,7 +199,7 @@ class mpu6050:
         elif accel_range == self.ACCEL_RANGE_16G:
             accel_scale_modifier = self.ACCEL_SCALE_MODIFIER_16G
         else:
-            print("Unkown range - accel_scale_modifier set to self.ACCEL_SCALE_MODIFIER_2G")
+            logging.info("Unkown range - accel_scale_modifier set to self.ACCEL_SCALE_MODIFIER_2G")
             accel_scale_modifier = self.ACCEL_SCALE_MODIFIER_2G
 
         x = x / accel_scale_modifier
@@ -278,7 +282,7 @@ class mpu6050:
         elif gyro_range == self.GYRO_RANGE_2000DEG:
             gyro_scale_modifier = self.GYRO_SCALE_MODIFIER_2000DEG
         else:
-            print("Unkown range - gyro_scale_modifier set to self.GYRO_SCALE_MODIFIER_250DEG")
+            logging.info("Unkown range - gyro_scale_modifier set to self.GYRO_SCALE_MODIFIER_250DEG")
             gyro_scale_modifier = self.GYRO_SCALE_MODIFIER_250DEG
 
         x = x / gyro_scale_modifier
@@ -297,12 +301,12 @@ class mpu6050:
 
 if __name__ == "__main__":
     mpu = mpu6050(0x68)
-    print(mpu.get_temp())
+    logging.info(mpu.get_temp())
     accel_data = mpu.get_accel_data()
-    print(accel_data['x'])
-    print(accel_data['y'])
-    print(accel_data['z'])
+    logging.info(accel_data['x'])
+    logging.info(accel_data['y'])
+    logging.info(accel_data['z'])
     gyro_data = mpu.get_gyro_data()
-    print(gyro_data['x'])
-    print(gyro_data['y'])
-    print(gyro_data['z'])
+    logging.info(gyro_data['x'])
+    logging.info(gyro_data['y'])
+    logging.info(gyro_data['z'])

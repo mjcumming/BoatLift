@@ -1,1 +1,7 @@
-RPI_ST-VL6180X-Python3
+*.json
+*.pyc
+*.sublime-*
+__pycache__
+build/*
+dist/*
+MANIFEST

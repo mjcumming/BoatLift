@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import time
 
+import homie
 from homie.device_base import Device_Base
 from homie.node.node_base import Node_Base
 
