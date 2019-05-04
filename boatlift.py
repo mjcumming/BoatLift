@@ -30,7 +30,7 @@ from blower_motor import Blower_Motor
 #from ultrasonic_sensor import UltraSonic
 from lift_position import Lift_Position
 from device_boatlift import Device_BoatLift
-
+from ds18b20 import DS18B20
 
 
 """
@@ -160,6 +160,9 @@ lift_motor = Blower_Motor()
 #roll and pitch
 lift_roll_pitch = Roll_Pitch()
 
+#water temp
+water_temp = DS18B20()
+
 #MQTT
 def set_lift_mode_callback(mode):
     if mode =='LIFT':
@@ -287,7 +290,7 @@ try:
                 text_mode ='LOWERING'
 
             payload = "Roll: {}  Pitch {}   Within parameters {}   Position {}    Mode {} ".format (roll,pitch, safe, position, text_mode)
-            lift_mqtt.update(roll,pitch,position,text_mode)
+            lift_mqtt.update(roll,pitch,position,text_mode,water_temp.get_temperature())
             logging.info(payload)
             #lift_valves.logging.info()
 

@@ -7,6 +7,7 @@ from homie.node.node_base import Node_Base
 
 from homie.node.property.property_enum import Property_Enum
 from homie.node.property.property_string import Property_String
+from homie.node.property.property_temperature import Property_Temperature
 
 
 LIFT_MODES = ['LIFT','LIFTMAX','LOWER','STOP']
@@ -37,13 +38,17 @@ class Device_BoatLift(Device_Base):
         self.lift_pitch = Property_String (node,id='pitch',name='Pitch')
         node.add_property (self.lift_pitch)
 
+        self.water_temp = Property_Temperature (node,id='watertemp',name='Water Temp',unit='C')
+        node.add_property (self.water_temp)
+
         self.start()
 
-    def update(self,roll,pitch,position,mode):
+    def update(self,roll,pitch,position,mode,water_temp):
         self.lift_roll.value = roll
         self.lift_pitch.value = pitch
         self.lift_position.value = position
         self.lift_mode.value = mode
+        self.water_temp.value = water_temp
         
 mqtt_settings = {
     'MQTT_BROKER' : 'QueenMQTT',
