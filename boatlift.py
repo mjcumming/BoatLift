@@ -5,7 +5,7 @@ Boat lift
 
 GPIO Pins (BOARD)
 
-LEDs 7,11,13,15
+LEDs 11,13,15
 Buttons 32,36,38,40
 Valves 29,31,33,35
 Float Switches 16,18,22

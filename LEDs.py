@@ -6,9 +6,9 @@ import time
 from LED import LED 
 
 LED_list = {
-    "lift" : 7,  #BOARD
+    "lift" : 13,  #BOARD
     "lower" : 11,
-    "bypass" : 13,
+    #"bypass" : 13,
     "stop" : 15,
 }
 
@@ -35,13 +35,13 @@ class LEDs:
     def set_lift(self):
         self.list ["lift"].flash()
         self.list ["lower"].off()
-        self.list ["bypass"].off()
+        #self.list ["bypass"].off()
         self.list ["stop"].on()
 
     def set_lower(self):
         self.list ["lift"].off()
         self.list ["lower"].flash()
-        self.list ["bypass"].off()
+        #self.list ["bypass"].off()
         self.list ["stop"].on()
 
     def set_bypass(self):
@@ -53,31 +53,31 @@ class LEDs:
     def set_lifted(self):
         self.list ["lift"].off()
         self.list ["lower"].on()
-        self.list ["bypass"].on()
+        #self.list ["bypass"].on()
         self.list ["stop"].off()
 
     def set_lifted_max(self):
         self.list ["lift"].off()
         self.list ["lower"].on()
-        self.list ["bypass"].on()
+        #self.list ["bypass"].on()
         self.list ["stop"].off()
 
     def set_lowered(self):
         self.list ["lift"].on()
         self.list ["lower"].off()
-        self.list ["bypass"].on()
+        #self.list ["bypass"].on()
         self.list ["stop"].off()
 
     def set_unknown(self):
         self.list ["lift"].on()
         self.list ["lower"].on()
-        self.list ["bypass"].on()
+        #self.list ["bypass"].on()
         self.list ["stop"].off()
 
     def set_error(self):
         self.list ["lift"].off()
         self.list ["lower"].off()
-        self.list ["bypass"].off()
+        #self.list ["bypass"].off()
         self.list ["stop"].flash()
 
 

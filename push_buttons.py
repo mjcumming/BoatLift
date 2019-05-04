@@ -8,7 +8,7 @@ from push_button import Push_Button
 button_list = {
     "LIFT" : 32,  #BOARD
     "LOWER" : 36,
-    "BYPASS" : 38,
+    #"BYPASS" : 38,
     "STOP" : 40,
 }
 
