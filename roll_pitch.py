@@ -2,7 +2,7 @@
 
 roll + = tilting port 
 
-pitch + = tilting to stern
+pitch + = tilting to bow
 
 
 
@@ -14,6 +14,9 @@ logger = logging.getLogger(__name__)
 from inclinometer import Inclinometer
 
 import time
+
+pitch_correction = 2
+roll_correction = 4
 
 
 class Roll_Pitch:
@@ -43,7 +46,8 @@ class Roll_Pitch:
         else:
             x = abs(x) - 180
     
-        self.roll,self.pitch = y,x
+        self.roll = y+roll_correction
+        self.pitch = x+pitch_correction
         return self.roll,self.pitch
 
     def check_within_parameters(self,roll_safety, pitch_safety):
@@ -65,4 +69,5 @@ if __name__ == "__main__":
     while True:
         roll,pitch = rp.read()
         logging.info("Roll: {}  Pitch {}   Within parameters {}".format (roll,pitch, rp.check_within_parameters(10,10)))
+        print("Roll: {}  Pitch {}   Within parameters {}".format (roll,pitch, rp.check_within_parameters(10,10)))
         time.sleep (1)

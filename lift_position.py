@@ -64,11 +64,11 @@ class Lift_Position:
 
         #print('Float switches: {}'.format(switches))
 
-        if switches ["BOTTOM"] == "OutOfWater":
+        if switches ["BOTTOM"] == "OutOfWater" and switches ["MIDDLE"] == "OutOfWater" and switches ["TOP"] == "OutOfWater":
             return "LIFTEDMAX"
-        elif switches ["TOP"] == "InWater":
+        elif switches ["BOTTOM"] == "InWater" and switches ["MIDDLE"] == "InWater" and switches ["TOP"] == "InWater":
             return "LOWERED"
-        elif switches ["MIDDLE"] == "OutOfWater":
+        elif switches ["BOTTOM"] == "InWater" and switches ["MIDDLE"] == "OutOfWater" and switches ["TOP"] == "OutOfWater":
             return "LIFTED"
         else:
             return "UNKNOWN"

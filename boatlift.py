@@ -66,7 +66,7 @@ UNKNOWN = 0
 #HEIGHT_RAISED = 80 #cm
 
 ROLL_GOAL = 0
-PITCH_GOAL = -2 # bow up slightly
+PITCH_GOAL = -1 # bow up slightly
 ROLL_RANGE = 2
 PITCH_RANGE = 2
 ROLL_SAFETY = 10 # max roll safety
@@ -98,7 +98,7 @@ last_update_time = time.time()
 
         
 mqtt_settings = {
-    'MQTT_BROKER' : 'QueenMQTT',
+    'MQTT_BROKER' : 'openhabianpi.local',
     'MQTT_PORT' : 1883,
 }
 

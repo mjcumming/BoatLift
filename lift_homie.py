@@ -6,7 +6,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 config = {
-    "HOST": "QueenMQTT",
+    "HOST": "OpenHABianPI",
     "PORT": 1883,
     "KEEPALIVE": 10,
     "USERNAME": "",
