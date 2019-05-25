@@ -67,8 +67,8 @@ UNKNOWN = 0
 
 ROLL_GOAL = 0
 PITCH_GOAL = -1 # bow up slightly
-ROLL_RANGE = 2
-PITCH_RANGE = 2
+ROLL_RANGE = 0
+PITCH_RANGE = 0
 ROLL_SAFETY = 10 # max roll safety
 PITCH_SAFETY = 10 # max pitch before error
 
@@ -118,7 +118,7 @@ def set_lift_mode(mode): # call to set the operation of the lift
 
 # push buttons
 def push_button_callback(mode,modifier):
-    logging.info ("Mode request {}, modifier {}".format(mode,modifier))
+    logger.info ("Mode request {}, modifier {}".format(mode,modifier))
 
     if mode =='LIFT':
         if modifier == 'LONG':
@@ -145,7 +145,7 @@ lift_LEDs = LEDs()
 def lift_position_callback(pos):
     global position
     position = pos
-    logging.info ('Lift postion {}'.format(position))
+    logger.info ('Lift postion {}'.format(position))
 
 lift_position = Lift_Position(lift_position_callback)
 
@@ -178,12 +178,12 @@ lift_mqtt = Device_BoatLift(device_id='boatlift',name = 'Boat Lift',mqtt_setting
 
 #functions to start a mode
 def start_lifting (max_lift):
-    logging.info('start lifting',max_lift)
     global current_mode 
     if max_lift:
         current_mode = LIFTING_MAX
     else:
         current_mode = LIFTING
+    logger.info('start lifting mode {}'.format(current_mode))
     lift_LEDs.set_lift()
     lift_motor.on()
     global mode_start_time 
@@ -226,7 +226,7 @@ def start_idle ():
 
     position = lift_position.get()
 
-    #logging.info ("Lift position {}".format(position))
+    #logger.info ("Lift position {}".format(position))
 
     if lift_position.is_lifted():
         lift_LEDs.set_lifted()
@@ -238,11 +238,11 @@ def start_idle ():
         lift_LEDs.set_unknown()
 
 def start_abort():
-    logging.info ('ABORTING')
+    logger.info ('ABORTING')
     start_idle()
     lift_LEDs.set_error()
 
-logging.info ("Starting Boat Lift")
+logger.info ("Starting Boat Lift")
 
 start_idle() 
 
@@ -251,7 +251,7 @@ try:
     while True:
 
         if request_mode != None: # user requested a change
-            logging.info ("Mode requested {}".format(request_mode))
+            logger.info ("Mode requested {}".format(request_mode))
             
             if request_mode == LIFT or request_mode == LIFT_MAX:
                 start_lifting(request_mode == LIFT_MAX) 
@@ -290,9 +290,10 @@ try:
                 text_mode ='LOWERING'
 
             payload = "Roll: {}  Pitch {}   Within parameters {}   Position {}    Mode {} ".format (roll,pitch, safe, position, text_mode)
-            lift_mqtt.update(roll,pitch,position,text_mode,water_temp.get_temperature())
-            logging.info(payload)
-            #lift_valves.logging.info()
+            valve_positions = lift_valves.get_text()
+            lift_mqtt.update(roll,pitch,position,text_mode,valve_positions,water_temp.get_temperature())
+            logger.info(payload)
+            #lift_valves.logger.info()
 
         if current_mode == LIFTING or current_mode == LIFTING_MAX:
             lift_valves.lifting(roll,pitch,ROLL_GOAL,PITCH_GOAL,ROLL_RANGE,PITCH_RANGE)
@@ -312,15 +313,15 @@ try:
         # check how long we have been running
         if mode_start_time != None:
             elapsed_time = time.time() - mode_start_time
-            #logging.info ('Elapsed Time: {}'.format(elapsed_time))
+            #logger.info ('Elapsed Time: {}'.format(elapsed_time))
 
             if elapsed_time > mode_expire_minutes*60: 
-                logging.info ("Watch dog time expired")
+                logger.info ("Watch dog time expired")
                 start_idle()
 
         time.sleep (.5)
 
 except KeyboardInterrupt:
-    logging.info("Stopped by User")
+    logger.info("Stopped by User")
     GPIO.cleanup()
 

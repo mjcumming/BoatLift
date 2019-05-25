@@ -47,6 +47,12 @@ class Valves:
         self.list ["bow_port"].set(bp)
         self.list ["stern_starboard"].set(ss)
         self.list ["stern_port"].set(sp)
+    
+    def get_all (self):
+        return self.list ["bow_starboard"].get(),self.list ["bow_port"].get(),self.list ["stern_starboard"].get(),self.list ["stern_port"].get()
+
+    def get_text (self):
+        return 'BP {}  BS {}  SP {}  SS {}'.format(self.list ["bow_port"].get() == True and '*' or '-',self.list ["bow_starboard"].get() == True and '*' or '-',self.list ["stern_port"].get() == True and '*' or '-',self.list ["stern_starboard"].get() == True and '*' or '-')
 
     def set_valve(self,valve,open):
         self.list[valve].set(open)

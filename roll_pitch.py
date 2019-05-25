@@ -70,4 +70,4 @@ if __name__ == "__main__":
         roll,pitch = rp.read()
         logging.info("Roll: {}  Pitch {}   Within parameters {}".format (roll,pitch, rp.check_within_parameters(10,10)))
         print("Roll: {}  Pitch {}   Within parameters {}".format (roll,pitch, rp.check_within_parameters(10,10)))
-        time.sleep (1)
+        time.sleep (.5)

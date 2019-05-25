@@ -38,16 +38,20 @@ class Device_BoatLift(Device_Base):
         self.lift_pitch = Property_String (node,id='pitch',name='Pitch')
         node.add_property (self.lift_pitch)
 
+        self.valves = Property_String (node,id='valves',name='Valves')
+        node.add_property (self.valves)
+
         self.water_temp = Property_Temperature (node,id='watertemp',name='Water Temp',unit='C')
         node.add_property (self.water_temp)
 
         self.start()
 
-    def update(self,roll,pitch,position,mode,water_temp):
+    def update(self,roll,pitch,position,mode,valves,water_temp):
         self.lift_roll.value = roll
         self.lift_pitch.value = pitch
         self.lift_position.value = position
         self.lift_mode.value = mode
+        self.valves.value = valves
         self.water_temp.value = water_temp
         
 mqtt_settings = {
