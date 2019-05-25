@@ -61,66 +61,102 @@ class Valves:
         return self.list[valve].get()
 
     def lowering(self,roll,pitch,roll_goal, pitch_goal, roll_range, pitch_range):
-        #print (roll,pitch,roll_goal, pitch_goal, roll_range, pitch_range)
+        starboard_limit = roll_goal + roll_range
+        port_limit = roll_goal - roll_range
+
+        bow_limit = pitch_goal + pitch_range
+        stern_limit = pitch_goal - pitch_range
+
         #bow starboard
-        if roll > (roll_goal + roll_range) or pitch > (pitch_goal + pitch_range):
-            self.set_valve('bow_starboard',False) # turn off
-        elif not self.get_valve("bow_starboard"): 
-            if roll <= (roll_goal) and pitch <= (pitch_goal):
-                self.set_valve('bow_starboard',True)
-        
+        if roll < port_limit or pitch < stern_limit: # tilting beyond limit to port or stern
+            self.set_valve('bow_starboard',True)
+        elif roll > starboard_limit or pitch > bow_limit: 
+            self.set_valve('bow_starboard',False)
+        elif not self.get_valve("bow_starboard") and (roll <= roll_goal and pitch <= pitch_goal):
+            self.set_valve('bow_starboard',True)
+        else:
+            self.set_valve('bow_starboard',True)
+
         #bow port
-        if roll < (roll_goal - roll_range) or pitch > (pitch_goal + pitch_range):
-            self.set_valve('bow_port',False) # turn off
-        elif not self.get_valve("bow_port"): 
-            if roll >= (roll_goal) and pitch <= (pitch_goal):
-                self.set_valve('bow_port',True)
-        
+        if roll > starboard_limit or pitch < stern_limit: 
+            self.set_valve('bow_port',True)
+        elif roll < port_limit or pitch > bow_limit: 
+            self.set_valve('bow_port',False)
+        elif not self.get_valve("bow_port") and (roll >= roll_goal and pitch <= pitch_goal):
+            self.set_valve('bow_port',True)
+        else:
+            self.set_valve('bow_port',True)   
+                    
         #stern starboard
-        if roll > (roll_goal + roll_range) or pitch < (pitch_goal - pitch_range):
-            self.set_valve('stern_starboard',False) # turn off
-        elif not self.get_valve("stern_starboard"): 
-            if roll <= (roll_goal) and pitch >= (pitch_goal):
-                self.set_valve('stern_starboard',True)
-        
+        if roll < port_limit or pitch > bow_limit: 
+            self.set_valve('stern_starboard',True)
+        elif roll > starboard_limit or pitch < stern_limit: 
+            self.set_valve('stern_starboard',False)
+        elif not self.get_valve("stern_starboard") and (roll <= roll_goal and pitch >= pitch_goal):
+            self.set_valve('stern_starboard',True)
+        else:
+            self.set_valve('stern_starboard',True)
+
         #stern port
-        if roll < (roll_goal - roll_range) or pitch < (pitch_goal - pitch_range):
-            self.set_valve('stern_port',False) # turn off
-        elif not self.get_valve("stern_port"): 
-            if roll >= (roll_goal) and pitch >= (pitch_goal):
-                self.set_valve('stern_port',True)
-      
+        if roll > starboard_limit or pitch > bow_limit: 
+            self.set_valve('stern_port',True)
+        elif roll < port_limit or pitch < stern_limit: 
+            self.set_valve('stern_port',False)
+        elif not self.get_valve("stern_port") and (roll >= roll_goal and pitch >= pitch_goal):
+            self.set_valve('stern_port',True)
+        else:
+            self.set_valve('stern_port',True)
 
  
     def lifting(self,roll,pitch,roll_goal, pitch_goal, roll_range, pitch_range): # roll/pitch are 0 when level, + numbers = leaning to starboard or bow
         #print (roll,pitch,roll_goal, pitch_goal, roll_range, pitch_range)
+        starboard_limit = roll_goal + roll_range
+        port_limit = roll_goal - roll_range
+
+        bow_limit = pitch_goal + pitch_range
+        stern_limit = pitch_goal - pitch_range
+
         #bow starboard
-        if roll < (roll_goal - roll_range) or pitch < (pitch_goal - pitch_range):
-            self.set_valve('bow_starboard',False) # turn off
-        elif not self.get_valve("bow_starboard"): 
-            if roll >= (roll_goal) and pitch >= (pitch_goal):
-                self.set_valve('bow_starboard',True)
-        
+        if roll < port_limit or pitch < stern_limit: # tilting beyond limit to port or stern
+            self.set_valve('bow_starboard',False)
+        elif roll > starboard_limit or pitch > bow_limit: 
+            self.set_valve('bow_starboard',True)
+        elif not self.get_valve("bow_starboard") and (roll >= roll_goal and pitch >= pitch_goal):
+            self.set_valve('bow_starboard',True)
+        else:
+            self.set_valve('bow_starboard',True)
+
         #bow port
-        if roll > (roll_goal + roll_range) or pitch < (pitch_goal - pitch_range):
-            self.set_valve('bow_port',False) # turn off
-        elif not self.get_valve("bow_port"): 
-            if roll <= (roll_goal) and pitch >= (pitch_goal):
-                self.set_valve('bow_port',True)
-        
+        if roll > starboard_limit or pitch < stern_limit: 
+            self.set_valve('bow_port',False)
+        elif roll < port_limit or pitch > bow_limit: 
+            self.set_valve('bow_port',True)
+        elif not self.get_valve("bow_port") and (roll <= roll_goal and pitch >= pitch_goal):
+            self.set_valve('bow_port',True)
+        else:
+            self.set_valve('bow_port',True)   
+                    
         #stern starboard
-        if roll < (roll_goal - roll_range) or pitch > (pitch_goal + pitch_range):
-            self.set_valve('stern_starboard',False) # turn off
-        elif not self.get_valve("stern_starboard"): 
-            if roll >= (roll_goal) and pitch <= (pitch_goal):
-                self.set_valve('stern_starboard',True)
-        
+        if roll < port_limit or pitch > bow_limit: 
+            self.set_valve('stern_starboard',False)
+        elif roll > starboard_limit or pitch < stern_limit: 
+            self.set_valve('stern_starboard',True)
+        elif not self.get_valve("stern_starboard") and (roll >= roll_goal and pitch <= pitch_goal):
+            self.set_valve('stern_starboard',True)
+        else:
+            self.set_valve('stern_starboard',True)
+
         #stern port
-        if roll > (roll_goal + roll_range) or pitch > (pitch_goal + pitch_range):
-            self.set_valve('stern_port',False) # turn off
-        elif not self.get_valve("stern_port"): 
-            if roll <= (roll_goal) and pitch <= (pitch_goal):
-                self.set_valve('stern_port',True)
+        if roll > starboard_limit or pitch > bow_limit: 
+            self.set_valve('stern_port',False)
+        elif roll < port_limit or pitch < stern_limit: 
+            self.set_valve('stern_port',True)
+        elif not self.get_valve("stern_port") and (roll <= roll_goal and pitch <= pitch_goal):
+            self.set_valve('stern_port',True)
+        else:
+            self.set_valve('stern_port',True)
+
+ 
 '''
 
 if __name__ == "__main__":

@@ -47,7 +47,7 @@ class LEDs:
     def set_bypass(self):
         self.list ["lift"].off()
         self.list ["lower"].off()
-        self.list ["bypass"].flash()
+        #self.list ["bypass"].flash()
         self.list ["stop"].on()
 
     def set_lifted(self):

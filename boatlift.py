@@ -67,10 +67,13 @@ UNKNOWN = 0
 
 ROLL_GOAL = 0
 PITCH_GOAL = -1 # bow up slightly
-ROLL_RANGE = 0
-PITCH_RANGE = 0
+LOWERING_ROLL_RANGE = 1
+LOWERING_PITCH_RANGE = 1
+LIFTING_ROLL_RANGE = .5
+LIFTING_PITCH_RANGE = .5
 ROLL_SAFETY = 10 # max roll safety
 PITCH_SAFETY = 10 # max pitch before error
+
 
 SAFETY_ENABLED = True # abort operation if unsafe angles
 
@@ -93,7 +96,7 @@ mode_expire_minutes = None
 position = UNKNOWN
 
 # timer to send updates
-update_interval = 6 # seconds
+update_interval = 10 # seconds
 last_update_time = time.time()
 
         
@@ -173,6 +176,10 @@ def set_lift_mode_callback(mode):
         set_lift_mode(LOWER)
     elif mode == 'STOP':
         set_lift_mode (STOP)
+    elif mode == 'BYPASS_BLOWER_OFF':
+        set_lift_mode (BYPASS_BLOWER_OFF)
+    elif mode == 'BYPASS_BLOWER_ON':
+        set_lift_mode (BYPASS_BLOWER_ON)
 
 lift_mqtt = Device_BoatLift(device_id='boatlift',name = 'Boat Lift',mqtt_settings=mqtt_settings,set_lift_mode=set_lift_mode_callback)
 
@@ -184,6 +191,7 @@ def start_lifting (max_lift):
     else:
         current_mode = LIFTING
     logger.info('start lifting mode {}'.format(current_mode))
+    print('!!!!!!!!!!!!!!!!!!!!!!!!!start lifting mode {}'.format(current_mode))
     lift_LEDs.set_lift()
     lift_motor.on()
     global mode_start_time 
@@ -223,8 +231,6 @@ def start_idle ():
     current_mode = IDLE 
     lift_motor.off()  
     lift_valves.set_all (False,False,False,False)
-
-    position = lift_position.get()
 
     #logger.info ("Lift position {}".format(position))
 
@@ -266,17 +272,19 @@ try:
 
             request_mode = None
 
-        roll,pitch = lift_roll_pitch.read()
         safe = lift_roll_pitch.check_within_parameters(ROLL_SAFETY,PITCH_SAFETY)
-        position = lift_position.get()
 
         if SAFETY_ENABLED and not safe:
             start_abort()
 
-        if current_mode == IDLE and safe:
-            start_idle()
+        #? not sure why
+        #if current_mode == IDLE and safe:
+        #    start_idle()
     
         if current_mode != IDLE or (time.time() - last_update_time) > update_interval:
+            roll,pitch = lift_roll_pitch.read_average()
+            position = lift_position.get()
+
             last_update_time = time.time()
 
             text_mode = ''
@@ -288,6 +296,10 @@ try:
                 text_mode ='LIFTING MAX'
             elif current_mode == LOWERING:
                 text_mode ='LOWERING'
+            elif current_mode == BYPASSING_BLOWER_OFF:
+                text_mode ='BYPASSING BLOWER OFF'
+            elif current_mode == BYPASSING_BLOWER_ON:
+                text_mode ='BYPASSING BLOWER ON'
 
             payload = "Roll: {}  Pitch {}   Within parameters {}   Position {}    Mode {} ".format (roll,pitch, safe, position, text_mode)
             valve_positions = lift_valves.get_text()
@@ -296,19 +308,20 @@ try:
             #lift_valves.logger.info()
 
         if current_mode == LIFTING or current_mode == LIFTING_MAX:
-            lift_valves.lifting(roll,pitch,ROLL_GOAL,PITCH_GOAL,ROLL_RANGE,PITCH_RANGE)
+            lift_valves.lifting(roll,pitch,ROLL_GOAL,PITCH_GOAL,LIFTING_ROLL_RANGE,LIFTING_PITCH_RANGE)
 
             if (current_mode == LIFTING and (lift_position.is_lifted() or lift_position.is_lifted_max())) or (current_mode == LIFTING_MAX and lift_position.is_lifted_max()):
                 start_idle() 
 
         elif current_mode == LOWERING:
-            lift_valves.lowering(roll,pitch,ROLL_GOAL,PITCH_GOAL,ROLL_RANGE,PITCH_RANGE)
+            lift_valves.lowering(roll,pitch,ROLL_GOAL,PITCH_GOAL,LOWERING_ROLL_RANGE,LOWERING_PITCH_RANGE)
 
             if lift_position.is_lowered():
                 start_idle() 
 
         elif current_mode == BYPASSING_BLOWER_OFF or current_mode == BYPASSING_BLOWER_ON: # NOT WORKING
-            safe = lift_roll_pitch.check_within_parameters(ROLL_SAFETY,PITCH_SAFETY)
+            pass
+            #safe = lift_roll_pitch.check_within_parameters(ROLL_SAFETY,PITCH_SAFETY)
             
         # check how long we have been running
         if mode_start_time != None:
@@ -319,7 +332,7 @@ try:
                 logger.info ("Watch dog time expired")
                 start_idle()
 
-        time.sleep (.5)
+        time.sleep (.25)
 
 except KeyboardInterrupt:
     logger.info("Stopped by User")

@@ -62,16 +62,18 @@ class Lift_Position:
     def get(self): #returns the position of the lift
         switches = self.read_float_switches()
 
-        #print('Float switches: {}'.format(switches))
+        print('Float switches: {}'.format(switches))
 
         if switches ["BOTTOM"] == "OutOfWater" and switches ["MIDDLE"] == "OutOfWater" and switches ["TOP"] == "OutOfWater":
             return "LIFTEDMAX"
-        elif switches ["BOTTOM"] == "InWater" and switches ["MIDDLE"] == "InWater" and switches ["TOP"] == "InWater":
-            return "LOWERED"
         elif switches ["BOTTOM"] == "InWater" and switches ["MIDDLE"] == "OutOfWater" and switches ["TOP"] == "OutOfWater":
             return "LIFTED"
+        elif switches ["BOTTOM"] == "InWater" and switches ["MIDDLE"] == "InWater" and switches ["TOP"] == "OutWater":
+            return "BETWEENLOWEREDLIFTED"
+        elif switches ["BOTTOM"] == "InWater" and switches ["MIDDLE"] == "InWater" and switches ["TOP"] == "InWater":
+            return "LOWERED"
         else:
-            return "UNKNOWN"
+            return "ERROR UNKNOWN"
 
     def is_lifted(self):
         return self.get()=='LIFTED'
