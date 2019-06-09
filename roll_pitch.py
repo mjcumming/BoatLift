@@ -17,8 +17,8 @@ import time
 
 from statistics import mean 
 
-pitch_correction = 2
-roll_correction = 4
+pitch_correction = 3.8
+roll_correction = -7.4
 
 
 class Roll_Pitch:

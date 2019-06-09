@@ -109,7 +109,6 @@ class Valves:
 
  
     def lifting(self,roll,pitch,roll_goal, pitch_goal, roll_range, pitch_range): # roll/pitch are 0 when level, + numbers = leaning to starboard or bow
-        #print (roll,pitch,roll_goal, pitch_goal, roll_range, pitch_range)
         starboard_limit = roll_goal + roll_range
         port_limit = roll_goal - roll_range
 
@@ -156,7 +155,15 @@ class Valves:
         else:
             self.set_valve('stern_port',True)
 
+        print (roll,pitch,starboard_limit,port_limit,bow_limit,stern_limit)
+        print(self.get_text())
  
+
+
+if __name__ == "__main__":
+    GPIO.setmode(GPIO.BOARD)
+    valves = Valves ()
+    valves.open_all()
 '''
 
 if __name__ == "__main__":
