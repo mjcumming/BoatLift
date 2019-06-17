@@ -24,8 +24,8 @@ from float_switch import Float_Switch
 
 float_switch_list = {
     "BOTTOM" : 16,  #BOARD
-    "MIDDLE" : 22,
-    "TOP" : 18,
+    "MIDDLE" : 18,
+    "TOP" : 22,
 }
 
 class Lift_Position:
@@ -38,19 +38,19 @@ class Lift_Position:
         self.callback = position_callback
 
         def debounce(channel):
-            #print ('float switch callback',channel, GPIO.input(channel))
+            print ('float switch callback',channel, GPIO.input(channel))
             if self.timer:
                 self.timer.cancel()
             
             def callback():
                 self.callback(self.get())
 
-            self.timer = Timer(2,callback)
+            self.timer = Timer(5,callback)
             self.timer.start()
 
         for name,pin in float_switch_list.items():
             self.float_switches [name] = Float_Switch(name,pin)
-            GPIO.add_event_detect(pin,GPIO.BOTH,callback=debounce, bouncetime=100) # Setup event on pin rising edge
+            GPIO.add_event_detect(pin,GPIO.BOTH,callback=debounce, bouncetime=1) # Setup event on pin rising edge
 
     def read_float_switches(self):
         switches = {}
@@ -68,7 +68,7 @@ class Lift_Position:
             return "LIFTEDMAX"
         elif switches ["BOTTOM"] == "InWater" and switches ["MIDDLE"] == "OutOfWater" and switches ["TOP"] == "OutOfWater":
             return "LIFTED"
-        elif switches ["BOTTOM"] == "InWater" and switches ["MIDDLE"] == "InWater" and switches ["TOP"] == "OutWater":
+        elif switches ["BOTTOM"] == "InWater" and switches ["MIDDLE"] == "InWater" and switches ["TOP"] == "OutOfWater":
             return "BETWEENLOWEREDLIFTED"
         elif switches ["BOTTOM"] == "InWater" and switches ["MIDDLE"] == "InWater" and switches ["TOP"] == "InWater":
             return "LOWERED"
@@ -94,7 +94,8 @@ if __name__ == "__main__":
 
     pbs = Lift_Position(callback)
 
-    print(pbs.get())
+    print (pbs.get())
+ 
 
     while True:
         pass

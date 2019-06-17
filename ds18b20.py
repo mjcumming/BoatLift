@@ -80,10 +80,13 @@ class DS18B20(object):
         """Returns the sensors slave path"""
         sensors = self.get_available_sensors()
         if self._id and self._id not in sensors:
-            raise DS18B20.NoSensorFoundError(sensor_id)
+            raise DS18B20.NoSensorFoundError(self._id)
 
         if not self._id and sensors:
             self._id = sensors[0]
+
+        if self._id == None:
+            raise DS18B20.NoSensorFoundError(self._id)
 
         return path.join(DS18B20.BASE_DIRECTORY, DS18B20.SLAVE_PREFIX + self._id, DS18B20.SLAVE_FILE)
 
@@ -127,8 +130,14 @@ class DS18B20(object):
 
 
 if __name__ == "__main__":
- 
-    ds = DS18B20 ()
+
+    try:
+
+        ds = DS18B20 ()
+
+    except Exception as ex:
+
+        print('DS ERROR:',ex)
  
     while True:
         print('Temp',ds.get_temperature())

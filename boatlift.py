@@ -164,7 +164,11 @@ lift_motor = Blower_Motor()
 lift_roll_pitch = Roll_Pitch()
 
 #water temp
-water_temp = DS18B20()
+try:
+    water_temp = DS18B20()
+except Exception as ex:
+    water_temp = None
+    logger.warn('DS TEMPERATURE ERROR: {}'.format(ex))
 
 #MQTT
 def set_lift_mode_callback(mode):
@@ -303,7 +307,10 @@ try:
 
             payload = "Roll: {}  Pitch {}   Within parameters {}   Position {}    Mode {} ".format (roll,pitch, safe, position, text_mode)
             valve_positions = lift_valves.get_text()
-            lift_mqtt.update(roll,pitch,position,text_mode,valve_positions,water_temp.get_temperature())
+            water_temperature = 0
+            if water_temp is not None:
+                water_temperature=water_temp.get_temperature()
+            lift_mqtt.update(roll,pitch,position,text_mode,valve_positions,water_temperature)
             logger.info(payload)
             #lift_valves.logger.info()
 
