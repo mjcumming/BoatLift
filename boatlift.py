@@ -96,8 +96,8 @@ mode_expire_minutes = None
 position = UNKNOWN
 
 # timer to send updates
-update_interval = 10 # seconds
-last_update_time = time.time()
+update_interval = 3600 # seconds
+last_update_time = None
 
         
 mqtt_settings = {
@@ -151,8 +151,7 @@ def lift_position_callback(pos):
     logger.info ('Lift postion {}'.format(position))
 
 lift_position = Lift_Position(lift_position_callback)
-
-
+prev_lift_position = lift_position.get()
 
 #valves
 lift_valves = Valves()
@@ -162,6 +161,8 @@ lift_motor = Blower_Motor()
 
 #roll and pitch
 lift_roll_pitch = Roll_Pitch()
+prev_roll = 0
+prev_pitch = 0
 
 #water temp
 try:
@@ -169,6 +170,9 @@ try:
 except Exception as ex:
     water_temp = None
     logger.warn('DS TEMPERATURE ERROR: {}'.format(ex))
+
+prev_water_temperature = 0
+
 
 #MQTT
 def set_lift_mode_callback(mode):
@@ -231,10 +235,15 @@ def start_bypassing (bloweron):
 def start_idle ():
     global mode_start_time
     mode_start_time = None
-    global current_mode 
+    global current_mode
+
+    if current_mode == LIFTING_MAX or current_mode == LIFTING:
+        lift_valves.set_all (False,False,False,False)
+    else:
+        lift_valves.set_all (True,True,True,True)
+
     current_mode = IDLE 
     lift_motor.off()  
-    lift_valves.set_all (False,False,False,False)
 
     #logger.info ("Lift position {}".format(position))
 
@@ -284,11 +293,36 @@ try:
         #? not sure why
         #if current_mode == IDLE and safe:
         #    start_idle()
-    
-        if current_mode != IDLE or (time.time() - last_update_time) > update_interval:
-            roll,pitch = lift_roll_pitch.read_average()
-            position = lift_position.get()
 
+        water_temperature = 0
+        if water_temp is not None:
+            water_temperature=water_temp.get_temperature()
+        roll,pitch = lift_roll_pitch.read_average()
+        position = lift_position.get()
+
+        send_resting_update = False
+
+        if (prev_water_temperature - 0.5) < water_temperature < (prev_water_temperature + 0.5) is False:
+            send_resting_update = True
+    
+        if (prev_roll - 0.5) < roll < (prev_roll + 0.5) is False:
+            send_resting_update = True
+    
+        if (prev_pitch - 0.5) < pitch < (prev_pitch + 0.5) is False:
+            send_resting_update = True
+    
+        if prev_lift_position != position:
+            send_resting_update = True
+    
+        if last_update_time is None or (time.time() - last_update_time) > update_interval:
+            send_resting_update = True
+
+        prev_roll = roll
+        prev_pitch = pitch
+        prev_lift_position = position
+        prev_water_temperature = water_temperature
+
+        if current_mode != IDLE or send_resting_update:
             last_update_time = time.time()
 
             text_mode = ''
@@ -305,14 +339,10 @@ try:
             elif current_mode == BYPASSING_BLOWER_ON:
                 text_mode ='BYPASSING BLOWER ON'
 
-            payload = "Roll: {}  Pitch {}   Within parameters {}   Position {}    Mode {} ".format (roll,pitch, safe, position, text_mode)
             valve_positions = lift_valves.get_text()
-            water_temperature = 0
-            if water_temp is not None:
-                water_temperature=water_temp.get_temperature()
             lift_mqtt.update(roll,pitch,position,text_mode,valve_positions,water_temperature)
-            logger.info(payload)
-            #lift_valves.logger.info()
+
+            logger.info("Roll: {}  Pitch {}   Within parameters {}   Position {}    Mode {} ".format (roll,pitch, safe, position, text_mode))
 
         if current_mode == LIFTING or current_mode == LIFTING_MAX:
             lift_valves.lifting(roll,pitch,ROLL_GOAL,PITCH_GOAL,LIFTING_ROLL_RANGE,LIFTING_PITCH_RANGE)
@@ -339,7 +369,7 @@ try:
                 logger.info ("Watch dog time expired")
                 start_idle()
 
-        time.sleep (.25)
+        time.sleep (1)
 
 except KeyboardInterrupt:
     logger.info("Stopped by User")

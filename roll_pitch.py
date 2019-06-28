@@ -65,7 +65,7 @@ class Roll_Pitch:
         if len(self.pitch_values) > 20:
             self.pitch_values.pop(0)
 
-        return mean(self.roll_values),mean(self.pitch_values)
+        return round(mean(self.roll_values),1),round(mean(self.pitch_values),1)
 
     def check_within_parameters(self,roll_safety, pitch_safety):
         roll,pitch = self.read_average()
