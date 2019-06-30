@@ -46,6 +46,7 @@ LOWER = 2
 BYPASS_BLOWER_OFF = 3
 BYPASS_BLOWER_ON = 6
 STOP = 4
+LEVEL = 7
 
 # operating modes of lift
 IDLE = 0 # all valves closed, blower motor off
@@ -54,6 +55,7 @@ LIFTING_MAX = 4 # lifting boat, motor on, valves open, lift all the way to top
 LOWERING = 2 # lowering boat, motor off, valves open
 BYPASSING_BLOWER_OFF = 3 # all valves open, motor off
 BYPASSING_BLOWER_ON = 5 # all valves open, motor off
+LEVELING = 6
 
 # position of lift
 LIFTED_MAX = 3
@@ -66,11 +68,13 @@ UNKNOWN = 0
 #HEIGHT_RAISED = 80 #cm
 
 ROLL_GOAL = 0
-PITCH_GOAL = -1 # bow up slightly
+PITCH_GOAL = -0.5 # bow up slightly
 LOWERING_ROLL_RANGE = 2 
 LOWERING_PITCH_RANGE = 2
-LIFTING_ROLL_RANGE = .5
-LIFTING_PITCH_RANGE = .5
+LIFTING_ROLL_RANGE = 1
+LIFTING_PITCH_RANGE = 1
+LEVELING_ROLL_RANGE = 1
+LEVELING_PITCH_RANGE = 1
 ROLL_SAFETY = 10 # max roll safety
 PITCH_SAFETY = 10 # max pitch before error
 
@@ -180,6 +184,8 @@ def set_lift_mode_callback(mode):
         set_lift_mode(LIFT)
     elif mode == 'LIFTMAX':
         set_lift_mode(LIFT_MAX)
+    elif mode == 'LEVEL':
+        set_lift_mode(LEVEL)
     elif mode == 'LOWER':
         set_lift_mode(LOWER)
     elif mode == 'STOP':
@@ -206,6 +212,18 @@ def start_lifting (max_lift):
     mode_start_time = time.time()
     global mode_expire_minutes
     mode_expire_minutes = 4
+
+#functions to start a mode
+def start_leveling ():
+    global current_mode 
+    current_mode = LIFTING
+    logger.info('start leveling mode {}'.format(current_mode))
+
+    lift_motor.on()
+    global mode_start_time 
+    mode_start_time = time.time()
+    global mode_expire_minutes
+    mode_expire_minutes = .5
 
 def start_lowering ():
     global current_mode 
@@ -237,10 +255,10 @@ def start_idle ():
     mode_start_time = None
     global current_mode
 
-    if current_mode == LIFTING_MAX or current_mode == LIFTING:
-        lift_valves.set_all (False,False,False,False)
+    if current_mode == LOWERING:
+        lift_valves.set_all (True,True,True,True) # keep valves open
     else:
-        lift_valves.set_all (True,True,True,True)
+        lift_valves.set_all (False,False,False,False)
 
     current_mode = IDLE 
     lift_motor.off()  
@@ -274,6 +292,8 @@ try:
             
             if request_mode == LIFT or request_mode == LIFT_MAX:
                 start_lifting(request_mode == LIFT_MAX) 
+            elif request_mode == LEVEL:
+                start_leveling() 
             elif request_mode == LOWER:
                 start_lowering() 
             elif request_mode == BYPASS_BLOWER_OFF:
@@ -296,7 +316,7 @@ try:
 
         water_temperature = 0
         if water_temp is not None:
-            water_temperature=water_temp.get_temperature()
+            water_temperature=round(water_temp.get_temperature(),1)
         roll,pitch = lift_roll_pitch.read_average()
         position = lift_position.get()
 
@@ -332,6 +352,8 @@ try:
                 text_mode ='LIFTING'
             elif current_mode == LIFTING_MAX:
                 text_mode ='LIFTING MAX'
+            elif current_mode == LEVELING:
+                text_mode ='LEVELING'
             elif current_mode == LOWERING:
                 text_mode ='LOWERING'
             elif current_mode == BYPASSING_BLOWER_OFF:
@@ -342,13 +364,18 @@ try:
             valve_positions = lift_valves.get_text()
             lift_mqtt.update(roll,pitch,position,text_mode,valve_positions,water_temperature)
 
-            logger.info("Roll: {}  Pitch {}   Within parameters {}   Position {}    Mode {} ".format (roll,pitch, safe, position, text_mode))
+            logger.info("Roll: {}  Pitch {}   Within parameters {}   Position {}  Valves {}  Mode {} ".format (roll,pitch, safe, position, valve_positions, text_mode))
 
         if current_mode == LIFTING or current_mode == LIFTING_MAX:
             lift_valves.lifting(roll,pitch,ROLL_GOAL,PITCH_GOAL,LIFTING_ROLL_RANGE,LIFTING_PITCH_RANGE)
 
-            if (current_mode == LIFTING and (lift_position.is_lifted() or lift_position.is_lifted_max())) or (current_mode == LIFTING_MAX and lift_position.is_lifted_max()):
+            if current_mode == LIFTING and lift_position.is_lifted():
+                start_leveling()
+            elif lift_position.is_lifted() or lift_position.is_lifted_max():
                 start_idle() 
+
+        elif current_mode == LEVELING:
+            lift_valves.lifting(roll,pitch,ROLL_GOAL,PITCH_GOAL,LEVELING_ROLL_RANGE,LEVELING_PITCH_RANGE)
 
         elif current_mode == LOWERING:
             lift_valves.lowering(roll,pitch,ROLL_GOAL,PITCH_GOAL,LOWERING_ROLL_RANGE,LOWERING_PITCH_RANGE)

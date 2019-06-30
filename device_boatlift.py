@@ -10,7 +10,7 @@ from homie.node.property.property_string import Property_String
 from homie.node.property.property_temperature import Property_Temperature
 
 
-LIFT_MODES = ['LIFT','LIFTMAX','LOWER','STOP','BYPASS_BLOWER_ON','BYPASS_BLOWER_OFF']
+LIFT_MODES = ['LIFT','LIFTMAX','LEVEL','LOWER','STOP','BYPASS_BLOWER_ON','BYPASS_BLOWER_OFF']
 
 
 class Device_BoatLift(Device_Base):
