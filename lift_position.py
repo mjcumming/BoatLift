@@ -38,7 +38,7 @@ class Lift_Position:
         self.callback = position_callback
 
         def debounce(channel):
-            print ('float switch callback',channel, GPIO.input(channel))
+            #print ('float switch callback',channel, GPIO.input(channel))
             if self.timer:
                 self.timer.cancel()
             
@@ -50,7 +50,7 @@ class Lift_Position:
 
         for name,pin in float_switch_list.items():
             self.float_switches [name] = Float_Switch(name,pin)
-            GPIO.add_event_detect(pin,GPIO.BOTH,callback=debounce, bouncetime=1) # Setup event on pin rising edge
+            GPIO.add_event_detect(pin,GPIO.BOTH,callback=debounce, bouncetime=5000) # Setup event on pin rising edge
 
     def read_float_switches(self):
         switches = {}

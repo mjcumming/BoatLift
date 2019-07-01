@@ -377,6 +377,10 @@ try:
         elif current_mode == LEVELING:
             lift_valves.lifting(roll,pitch,ROLL_GOAL,PITCH_GOAL,LEVELING_ROLL_RANGE,LEVELING_PITCH_RANGE)
 
+            if (ROLL_GOAL-LEVELING_ROLL_RANGE) < roll < (ROLL_GOAL-LEVELING_ROLL_RANGE):
+                if (PITCH_GOAL-LEVELING_PITCH_RANGE) < pitch < (PITCH_GOAL-LEVELING_PITCH_RANGE):
+                    start_idle()
+
         elif current_mode == LOWERING:
             lift_valves.lowering(roll,pitch,ROLL_GOAL,PITCH_GOAL,LOWERING_ROLL_RANGE,LOWERING_PITCH_RANGE)
 
