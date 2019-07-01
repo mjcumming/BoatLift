@@ -73,8 +73,8 @@ LOWERING_ROLL_RANGE = 2
 LOWERING_PITCH_RANGE = 2
 LIFTING_ROLL_RANGE = 1
 LIFTING_PITCH_RANGE = 1
-LEVELING_ROLL_RANGE = 1
-LEVELING_PITCH_RANGE = 1
+LEVELING_ROLL_RANGE = .5
+LEVELING_PITCH_RANGE = .5
 ROLL_SAFETY = 10 # max roll safety
 PITCH_SAFETY = 10 # max pitch before error
 
@@ -100,7 +100,7 @@ mode_expire_minutes = None
 position = UNKNOWN
 
 # timer to send updates
-update_interval = 3600 # seconds
+update_interval = 900 # seconds, 15minutes
 last_update_time = None
 
         
@@ -205,7 +205,7 @@ def start_lifting (max_lift):
     else:
         current_mode = LIFTING
     logger.info('start lifting mode {}'.format(current_mode))
-    print('!!!!!!!!!!!!!!!!!!!!!!!!!start lifting mode {}'.format(current_mode))
+    #print('!!!!!!!!!!!!!!!!!!!!!!!!!start lifting mode {}'.format(current_mode))
     lift_LEDs.set_lift()
     lift_motor.on()
     global mode_start_time 
