@@ -71,8 +71,8 @@ ROLL_GOAL = 0
 PITCH_GOAL = -0.5 # bow up slightly
 LOWERING_ROLL_RANGE = 2 
 LOWERING_PITCH_RANGE = 2
-LIFTING_ROLL_RANGE = 1
-LIFTING_PITCH_RANGE = 1
+LIFTING_ROLL_RANGE = 1.5
+LIFTING_PITCH_RANGE = 1.5
 LEVELING_ROLL_RANGE = .5
 LEVELING_PITCH_RANGE = .5
 ROLL_SAFETY = 10 # max roll safety
@@ -91,6 +91,7 @@ Globals
 
 # modes
 current_mode = IDLE
+prev_mode = IDLE
 request_mode = None
 
 mode_start_time = None
@@ -334,6 +335,9 @@ try:
         if prev_lift_position != position:
             send_resting_update = True
     
+        if prev_mode != current_mode:
+            send_resting_update = True
+    
         if last_update_time is None or (time.time() - last_update_time) > update_interval:
             send_resting_update = True
 
@@ -341,6 +345,7 @@ try:
         prev_pitch = pitch
         prev_lift_position = position
         prev_water_temperature = water_temperature
+        prev_mode = current_mode
 
         if current_mode != IDLE or send_resting_update:
             last_update_time = time.time()
@@ -362,15 +367,18 @@ try:
                 text_mode ='BYPASSING BLOWER ON'
 
             valve_positions = lift_valves.get_text()
-            lift_mqtt.update(roll,pitch,position,text_mode,valve_positions,water_temperature)
-
-            logger.info("Roll: {}  Pitch {}   Within parameters {}   Position {}  Valves {}  Mode {} ".format (roll,pitch, safe, position, valve_positions, text_mode))
+            
+            elapsed_time = "{}".format(time.time() - mode_start_time)
+            lift_mqtt.update(roll,pitch,position,text_mode,valve_positions,water_temperature,elapsed_time)
+            
+            logger.info("Roll: {}  Pitch {}   Within parameters {}   Position {}  Valves {}  Mode {} Time {}".format (roll,pitch, safe, position, valve_positions, text_mode, elapsed_time))
 
         if current_mode == LIFTING or current_mode == LIFTING_MAX:
             lift_valves.lifting(roll,pitch,ROLL_GOAL,PITCH_GOAL,LIFTING_ROLL_RANGE,LIFTING_PITCH_RANGE)
 
             if current_mode == LIFTING and lift_position.is_lifted():
-                start_leveling()
+                #start_leveling()
+                start_idle()
             elif lift_position.is_lifted() or lift_position.is_lifted_max():
                 start_idle() 
 

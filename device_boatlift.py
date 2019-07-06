@@ -44,15 +44,19 @@ class Device_BoatLift(Device_Base):
         self.water_temp = Property_Temperature (node,id='watertemp',name='Water Temp',unit='C')
         node.add_property (self.water_temp)
 
+        self.mode_run_time = Property_String (node,id='moderuntime',name='Mode Run Time')
+        node.add_property (self.mode_run_time)
+
         self.start()
 
-    def update(self,roll,pitch,position,mode,valves,water_temp):
+    def update(self,roll,pitch,position,mode,valves,water_temp,mode_run_time):
         self.lift_roll.value = roll
         self.lift_pitch.value = pitch
         self.lift_position.value = position
         self.lift_mode.value = mode
         self.valves.value = valves
         self.water_temp.value = water_temp
+        self.mode_run_time=mode_run_time
         
 mqtt_settings = {
     'MQTT_BROKER' : 'QueenMQTT',
