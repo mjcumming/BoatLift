@@ -354,7 +354,7 @@ try:
 
         prev_roll = roll
         prev_pitch = pitch
-        prev_lift_position = position
+        #prev_lift_position = position
         prev_water_temperature = water_temperature
         prev_mode = current_mode
 
@@ -387,10 +387,10 @@ try:
         if current_mode == LIFTING or current_mode == LIFTING_MAX:
             lift_valves.lifting(roll,pitch,ROLL_GOAL,PITCH_GOAL,LIFTING_ROLL_RANGE,LIFTING_PITCH_RANGE)
 
-            if current_mode == LIFTING and lift_position.is_lifted():
+            if current_mode == LIFTING and lift_position.done_lifting():
                 #start_leveling()
                 start_idle()
-            elif lift_position.is_lifted() or lift_position.is_lifted_max():
+            elif lift_position.is_lifted() or lift_position.done_lifting_max():
                 start_idle() 
 
         elif current_mode == LEVELING:
@@ -403,7 +403,7 @@ try:
         elif current_mode == LOWERING:
             lift_valves.lowering(roll,pitch,ROLL_GOAL,PITCH_GOAL,LOWERING_ROLL_RANGE,LOWERING_PITCH_RANGE)
 
-            if lift_position.is_lowered():
+            if lift_position.done_lowering():
                 start_idle() 
 
         elif current_mode == BYPASSING_BLOWER_OFF or current_mode == BYPASSING_BLOWER_ON: # NOT WORKING

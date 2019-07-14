@@ -32,7 +32,7 @@ class Lift_Position:
         distance = self.us_sensor.distance()
 
         if distance is None:
-            return "ERROR UNKNOWN"
+            return "ERROR UNKNOWN",None
         elif distance < LOWERED:
             return "LOWERED",distance
         elif distance > LIFTED_MAX:
@@ -41,6 +41,27 @@ class Lift_Position:
             return "LIFTED",distance
         else:
             return "BETWEENLOWEREDLIFTED",distance
+
+    def done_lifting(self):
+        position,height = self.get()
+        if height is not None:
+            return height > LIFTED+5
+        else:
+            return False
+
+    def done_lifting_max(self):
+        position,height = self.get()
+        if height is not None:
+            return height > LIFTED_MAX+5
+        else:
+            return False
+
+    def done_lowering(self):
+        position,height = self.get()
+        if height is not None:
+            return height < LOWERED 
+        else:
+            return False
 
     def is_lifted(self):
         return self.get() [0] =='LIFTED'
@@ -64,6 +85,8 @@ if __name__ == "__main__":
         print (pbs.get())
  
         print (pbs.is_lowered())
+
+        print (pbs.done_lowering())
 
         time.sleep(1)
         pass

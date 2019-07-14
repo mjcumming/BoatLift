@@ -53,6 +53,7 @@ class Device_BoatLift(Device_Base):
         self.start()
 
     def update(self,roll,pitch,position,height,mode,valves,water_temp,mode_run_time):
+        print ('Homie update',roll,pitch,position,height,mode,valves,water_temp,mode_run_time)
         self.lift_roll.value = roll
         self.lift_pitch.value = pitch
         self.lift_position.value = position
