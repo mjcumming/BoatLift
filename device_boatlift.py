@@ -32,6 +32,9 @@ class Device_BoatLift(Device_Base):
         self.lift_position = Property_String (node,id='position',name='Position')
         node.add_property (self.lift_position)
 
+        self.lift_height = Property_String (node,id='height',name='Height')
+        node.add_property (self.lift_height)
+
         self.lift_roll = Property_String (node,id='roll',name='Roll')
         node.add_property (self.lift_roll)
 
@@ -49,10 +52,11 @@ class Device_BoatLift(Device_Base):
 
         self.start()
 
-    def update(self,roll,pitch,position,mode,valves,water_temp,mode_run_time):
+    def update(self,roll,pitch,position,height,mode,valves,water_temp,mode_run_time):
         self.lift_roll.value = roll
         self.lift_pitch.value = pitch
         self.lift_position.value = position
+        self.lift_height.value = height
         self.lift_mode.value = mode
         self.valves.value = valves
         self.water_temp.value = water_temp

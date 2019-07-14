@@ -22,7 +22,7 @@ ROLL_OFFSET = 0
 
 class Inclinometer:
 
-    RestrictPitch = True 
+    RestrictPitch = False
 
     kalmanX = KalmanAngle()
     kalmanY = KalmanAngle()
@@ -134,4 +134,4 @@ if __name__ == "__main__":
     while True:
         x,y = inc.get_angles()
         print("Angle X: " + str(int (x))+"   " +"Angle Y: " + str(int(y)))
-        time.sleep (1)
+        time.sleep (.25)

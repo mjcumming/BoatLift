@@ -29,6 +29,7 @@ from push_buttons import Push_Buttons
 from blower_motor import Blower_Motor
 #from ultrasonic_sensor import UltraSonic
 from lift_position import Lift_Position
+from lift_position_ultrasound import Lift_Position
 from device_boatlift import Device_BoatLift
 from ds18b20 import DS18B20
 
@@ -98,7 +99,11 @@ mode_start_time = None
 mode_expire_minutes = None
 
 # position
-position = UNKNOWN
+#position = 0
+#last_position = -1
+
+lift_height = 0
+last_lift_height = -1
 
 # timer to send updates
 update_interval = 900 # seconds, 15minutes
@@ -150,6 +155,7 @@ lift_LEDs = LEDs()
 
 
 #position
+'''
 def lift_position_callback(pos):
     global position
     position = pos
@@ -157,6 +163,7 @@ def lift_position_callback(pos):
 
 lift_position = Lift_Position(lift_position_callback)
 prev_lift_position = lift_position.get()
+'''
 
 #valves
 lift_valves = Valves()
@@ -318,8 +325,9 @@ try:
         water_temperature = 0
         if water_temp is not None:
             water_temperature=round(water_temp.get_temperature(),1)
+
         roll,pitch = lift_roll_pitch.read_average()
-        position = lift_position.get()
+        lift_position,lift_height = lift_position.get() 
 
         send_resting_update = False
 
@@ -332,9 +340,12 @@ try:
         if (prev_pitch - 0.5) < pitch < (prev_pitch + 0.5) is False:
             send_resting_update = True
     
-        if prev_lift_position != position:
+#        if prev_lift_position != position:
+#            send_resting_update = True
+
+        if (lift_height - 5) < lift_height < (lift_height + 5):
             send_resting_update = True
-    
+
         if prev_mode != current_mode:
             send_resting_update = True
     
@@ -369,7 +380,7 @@ try:
             valve_positions = lift_valves.get_text()
             
             elapsed_time = "{}".format(time.time() - mode_start_time)
-            lift_mqtt.update(roll,pitch,position,text_mode,valve_positions,water_temperature,elapsed_time)
+            lift_mqtt.update(roll,pitch,lift_position,lift_height,text_mode,valve_positions,water_temperature,elapsed_time)
             
             logger.info("Roll: {}  Pitch {}   Within parameters {}   Position {}  Valves {}  Mode {} Time {}".format (roll,pitch, safe, position, valve_positions, text_mode, elapsed_time))
 
